@@ -1,0 +1,70 @@
+textarea,input {
+    font-family: 'Lucida Grande', Arial, sans;
+    font-size: 8pt;
+}
+
+textarea {
+    padding: 2px;
+}
+
+#input-area {
+    margin-top: 40px;
+    font-size: 10pt;
+}
+
+#input-area textarea {
+    resize: vertical;
+}
+
+#status-box {
+    position: absolute;
+    top: 420px;
+    left: 50%;
+    margin-left: -171px;
+    padding: 20px 20px 10px 20px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+    z-index: 1;
+    text-align: left;
+}
+
+#error-box {
+    position: absolute;
+    width: 174px;
+    top: 420px;
+    left: 50%;
+    margin-left: -87px;
+    padding: 20px 20px 20px 20px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+    z-index: 1;
+    text-align: left;
+}
+
+#progress-bar {
+    width: 300px;
+    margin-top: 10px;
+}
+
+#percentage {
+    font-weight: bold;
+}
+
+#word-lookup-area {
+    margin-top: 40px;
+    font-size: 12pt;
+}
+
+#word-info {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    margin-left: -210px;
+    width: 420px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+}

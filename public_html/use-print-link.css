@@ -1,0 +1,12 @@
+@media print {
+    #print-header {
+	display: none;
+    }
+    #text-area {
+        display: none;
+    }
+    #use-print-link-message {
+	display: inline;
+	font-size: 24pt;
+    }
+}

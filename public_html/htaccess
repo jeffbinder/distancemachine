@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteRule ^/text/(.*)\.(.*) /$1.$2 [L]
+RewriteRule ^/text/(.*) /text.php?id=$1
+RewriteRule ^/unsaved$ /text.php
+RewriteRule ^/entry$ /entry.php
+RewriteRule ^/about$ /about.html
+RewriteRule ^/howitworks$ /howitworks.html
+RewriteRule ^/examples$ /examples.html
+RewriteRule ^/tos$ /tos.html
+RewriteRule ^/$ /entry [R]

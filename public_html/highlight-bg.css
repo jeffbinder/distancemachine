@@ -1,0 +1,26 @@
+@media screen {
+    .old-word {
+        background-color: lightBlue;
+    }
+    .lapsed-word {
+        background-color: #F0E68C;
+    }
+    .new-word {
+        background-color: pink;
+    }
+}
+
+@media print {
+    .old-word {
+        border:2px solid lightBlue;
+        margin: -2px;
+    }
+    .lapsed-word {
+        border:2px solid #F0E68C;
+        margin: -2px;
+    }
+    .new-word {
+        border:2px solid pink;
+        margin: -2px;
+    }
+}

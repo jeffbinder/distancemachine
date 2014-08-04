@@ -1,0 +1,12 @@
+.old-word {
+    border:2px solid lightBlue;
+    margin: -2px;
+}
+.lapsed-word {
+    border:2px solid #F0E68C;
+    margin: -2px;
+}
+.new-word {
+    border:2px solid pink;
+    margin: -2px;
+}

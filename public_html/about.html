@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Inika:700">
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu:400">
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Ubuntu:700">
+  <link rel="stylesheet" type="text/css" href="site.css"></link>
+  <link rel="stylesheet" type="text/css" href="wordinfo.css"></link>
+  <link rel="stylesheet" type="text/css" href="entry.css"></link>
+  <title>The Distance Machine - What it does</title>
+ </head>
+ <body>
+  <div class="title-area">
+   <div class="title">
+    <a href="/">The Distance Machine</a>
+   </div>
+  </div>
+  <div class="box" id="text-area">
+   <div style="font-size:16pt;margin-bottom:10px">
+    What it does
+   </div>
+   <div class="text">
+    The Distance Machine is a new way of visualizing the changes that the English language underwent in the past few centuries.  Using Google's <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html" target="_blank">Ngrams data</a> and a specially-designed statistical model, it determines the approximate year when certain words&mdash;such as <i>thou</i>&mdash;went out of fashion, and when others&mdash;such as <i>computer</i>&mdash;came into common use.  Using this information, it shows you (right in your Web browser) how the words of a particular text fit in with these overall trends.
+   </div>
+   <div class="text">
+    For example, here is an excerpt from the 2014 State of the Union address, showing words that were significantly less common in print around 1800:
+   </div>
+   <div class="text">
+    <img src="images/example-sotu.png"></img>
+   </div>
+   <div class="text">
+    Things get really interesting when we look at texts from hundreds of years ago.  This is a paragraph from Herman Melville's <i>Moby-Dick</i>, which was first published in 1851.  The red highlighting indicates words that are not yet in common use in the year displayed at the top; yellow means that the word was more common in both earlier and later periods.  When you play the video, you'll see the year change from 1800 to 2014.  As we get closer to the present, you will begin to see blue highlights indicating words that have fallen out of common use.
+   </div>
+   <div class="text">
+    <video controls>
+     <source src="videos/example.mp4" type="video/mp4">
+     <source src="videos/example.ogg" type="video/ogg">
+     Your browser does not support the video tag.
+    </video>
+   </div>
+   <div class="text">
+    Moving through the years like this can give us a vivid sense of the way the changing nature of the language in which a text is written.  It also reveals the fact that these changes are not entirely linear&mdash;almost every text, it seems, contains some words that had either lost their currency or not yet caught on at the time it was published.
+   </div>
+   <div class="text">Understanding what is going on with the individual words that are highlighted requires some thought.  You might notice that Melville uses the word <i>agencies</i>, which does not become common until the twentieth century.  But while the most common usage today refers to a governmental organization, Melville uses the word to refer to things that influence a person's character.
+   </div>
+   <div class="text">
+    To make it easier to start thinking about problems like this, the Distance Machine allows you to quickly view further information about a word by double-clicking on it, including definitions from <a href="http://wordnet.princeton.edu/" target="_blank">WordNet</a>.  Double-clicking on the word <i>agencies</i> shows you this:
+   </div>
+   <div class="text">
+    <img src="images/wordinfo-agencies.png"></img>
+   </div>
+   <div class="text">
+    This is only a starting point for serious research, but I hope that it will a useful platform for thinking critically about the history of language.
+   </div>
+   <div class="text">
+    Try it out yourself!  Here is the full Distance Machine version of <a href="/text/KdQjQaPb" target="_blank">Moby-Dick</a>.  See some <a href="/examples">more examples</a> or <a href="/">enter your own text</a>.
+   </div>
+   <div class="text">
+    For details about the method used and the thinking behind it, see the <a href="howitworks">How it works</a> page.
+   </div>
+   <hr/>
+   <div class="text">
+    The Distance Machine was created by <a href="http://newmedialab.cuny.edu/people/jeffrey-binder/" target="_blank">Jeffrey Binder</a>, a PhD student in the <a href="https://www.gc.cuny.edu/Page-Elements/Academics-Research-Centers-Initiatives/Doctoral-Programs/English" target="_blank">Department of English</a> at <a href="https://www.gc.cuny.edu/" target="_blank">CUNY Graduate Center</a>, with the help of the <a href="http://newmedialab.cuny.edu/" target="_blank">CUNY New Media Lab</a>.
+   </div>
+  </div>
+  <div class="box" id="footer">
+   <div style="float:right"><a href="http://newmedialab.cuny.edu/people/jeffrey-binder/" target="_blank">About me</a> | <a href="http://github.com/jeffbinder/distancemachine" target="_blank">Source code</a> | <a href="tos" target="_blank">Legal</a></div>
+   <div>This site copyright © 2014 Jeffrey Binder.</div>
+  </div>
+ </body>
+</html>

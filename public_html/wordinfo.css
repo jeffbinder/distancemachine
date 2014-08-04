@@ -1,0 +1,31 @@
+#selected-word {
+    font-weight: bold;
+}
+
+#word-usage-chart {
+    width: 400px;
+    height: 250px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#definition-area {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+#definitions div {
+    margin-top: 0.5em;
+}
+
+.usage-period-text {
+    font-weight: bold;
+}
+
+#word-info-loading-message {
+    position: relative;
+    width: 400px;
+    top: 115px;
+    text-align: center;
+    font-weight: bold;
+}
