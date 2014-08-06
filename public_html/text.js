@@ -239,7 +239,7 @@ function print_text()
     show_print_link_message();
 }
 
-$(function () {
+$(window).load(function () {
     if (saved) {
         $("#save-link").text("Text saved");
     }
