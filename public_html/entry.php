@@ -32,12 +32,12 @@
   </div>
   <div class="box" id="text-area">
    <div class="text" style="margin-bottom:10px">
-    The Distance Machine uses historical word usage data from Google Books to highlight words in a text that were unusual at a selected point in time.  New to this site?  <a href="about" target="_blank">Start here</a>.
+    The Distance Machine uses historical word usage data from Google Books to highlight words in a text that were unusual at a selected point in time.  New to this site?  <a href="about">Start here</a>.
    </div>
    <hr/>
    <div>
-    <a href="howitworks" target="_blank">How it works</a>
-    | <a href="examples" target="_blank">Examples</a>
+    <a href="howitworks">How it works</a>
+    | <a href="examples">Examples</a>
    </div>
   </div>
   <div class="box" id="input-area">
@@ -74,7 +74,7 @@
     </div>
   </div>
   <div class="box" id="footer">
-   <div style="float:right"><a href="http://newmedialab.cuny.edu/people/jeffrey-binder/" target="_blank">About me</a> | <a href="http://github.com/jeffbinder/distancemachine" target="_blank">Source code</a> | <a href="tos" target="_blank">Legal</a></div>
+   <div style="float:right"><a href="http://newmedialab.cuny.edu/people/jeffrey-binder/">About me</a> | <a href="http://github.com/jeffbinder/distancemachine">Source code</a> | <a href="tos">Legal</a></div>
    <div>This site copyright © 2014 Jeffrey Binder.</div>
   </div>
   <div id="status-box">
