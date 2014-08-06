@@ -41,6 +41,7 @@ $content = $data['content'];
   <!--<script src="d3.min.js"></script>-->
   <!--<script src="jquery.js"></script>-->
   <script src="jquery-ui-1.10.4.custom.min.js"></script>
+  <script src="jquery.ui.touch-punch.min.js"></script>
   <script src="jquery.cookie.js"></script>
   <script src="config.js"></script>
   <script src="wordinfo.js"></script>

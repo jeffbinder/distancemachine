@@ -3,7 +3,7 @@ The Distance Machine
 
 [The Distance Machine](http://distancemachine.org) is a Web-based tool that finds words in a text that were uncommon in a given year.  This Git repository includes both the source code for this Web application (written in an Ajaxy way with JavaScript and PHP) and some scripts that were used to create the data underlying it.  The tool relies on a statistical model for determining when words come into or go out of common usage, and this model may be useful for other applications.
 
-The Distance Machine is under the MIT license.  This package incorporates [D3 3.4.8](http://d3js.org/), [jQuery 1.10.2](http://jquery.com), [jQuery UI 1.10.4](http://jqueryui.com), and the jQuery [cookie](https://github.com/carhartl/jquery-cookie) and [watermark](https://code.google.com/p/jquery-watermark/) modules.  D3 is under the BSD license; the other packages are all available under the MIT license.
+The Distance Machine is under the MIT license.  This package incorporates [D3 3.4.8](http://d3js.org/), [jQuery 1.10.2](http://jquery.com), [jQuery UI 1.10.4](http://jqueryui.com), [jQuery UI Touch Punch](https://github.com/furf/jquery-ui-touch-punch), and the jQuery [cookie](https://github.com/carhartl/jquery-cookie) and [watermark](https://code.google.com/p/jquery-watermark/) modules.  D3 is under the BSD license; the other packages are all available under the MIT license.
 
 # The Word Count Data
 
