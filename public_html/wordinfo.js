@@ -193,17 +193,17 @@ function update_word_usage_text(word, data)
 
 function update_word_definitions(word, region, data)
 {
-    var definitions = data['definitions'],
+    var wordnet_definitions = data['wordnet-definitions'],
         html = [];
         
-    if (!definitions.length) {
-        $("#definition-text").html("No <a href=\"http://wordnet.princeton.edu/\" target=\"_blank\">WordNet</a> definitions available.");
+    if (!wordnet_definitions.length) {
+        html.push("No <a href=\"http://wordnet.princeton.edu/\" target=\"_blank\">WordNet</a> definitions available.");
     } else {
-        $("#definition-text").html("<a href=\"http://wordnet.princeton.edu/\" target=\"_blank\">WordNet</a> definitions:");
+        html.push("<a href=\"http://wordnet.princeton.edu/\" target=\"_blank\">WordNet</a> definitions:");
     }
     
-    for (var i in definitions) {
-        var definition = definitions[i];
+    for (var i in wordnet_definitions) {
+        var definition = wordnet_definitions[i];
         var lemma = definition[0], pos = definition[1], rank = definition[2],
             synonyms = definition[3].split(';'), def = definition[4];
         // var samples = definition[5].split(';');
@@ -241,6 +241,30 @@ function update_word_definitions(word, region, data)
         html.push("</div>");
     }
     
+    var dict_definitions = data['dict-definitions'];
+    
+    for (var i in dicts) {
+        var dict = dicts[i];
+        var definitions = dict_definitions[dict],
+            dict_name = dict_names[dict];
+            
+        html.push("<hr/>");
+        
+        if (!definitions.length) {
+            html.push(dict_name[0] + " definition not available.");
+        } else {
+            html.push("Definition from <b>" + dict_name[1] + "</b>:");
+        }
+    
+        for (var i in definitions) {
+            var definition = definitions[i][0];
+            pars = definition.split('\n');
+            for (var j in pars) {
+                html.push("<div>" + pars[j] + "</div>");
+            }
+        }
+    }
+    
     $("#definitions").html(html.join(''));
 }
 
@@ -253,7 +277,6 @@ function show_word_info(word, region)
     $("#selected-word").text(word);
     $("#word-usage-chart").html("<div id='word-info-loading-message'>Loading...</div>");
     $("#usage-periods-text").html("");
-    $("#definition-text").html("");
     $("#definitions").html("");
     $("#word-info").css("display", "inline");
     

@@ -655,12 +655,36 @@ WHERE word.lemma = ?
     }
 }
 
+// Used in the below.
+function check_detachment(&$lemmas, $word, $suffix, $ending, $pos)
+{
+    $length = strlen($suffix);
+    if (substr($word, -$length) == $suffix) {
+        $s = substr($word, 0, -$length) . $ending;
+        if (is_lemma($s)) {
+            $pair = [$s, $pos];
+            // Before adding the lemma to the list, check whether it's a duplicate.
+            // Important note: we are not accounting for the use of "nv" to
+            // indicate either a noun or a verb here.  This will produce duplicate
+            // results if there are cases where a lemma produced by "nv" rules is
+            // also produced by another rule that specifies either "n" or "v".  This
+            // could be changed without too much hassle, but it's not needed at
+            // present because this case never occurs in our rules.
+            if (!in_array($pair, $lemmas)
+                && !in_array([$s, null], $lemmas)) {
+                $lemmas[] = $pair;
+            }
+        }
+    }
+}
+
 // A less-intelligent imitation of WordNet's Morphy algorithm.  Converts an inflected
 // word (e.g. "thought") into the primary form of the lemma ("think").  Returns a list
 // of pairs [lemma, pos] where pos (possibly empty) is an inferred part of speech
 // indicator.  In addition to the WordNet pos strings, the pos can be "nv" indicating
-// that the word is either a noun or a verb.
-function lemmatize($word)
+// that the word is either a noun or a verb.  If $check_wordnet is true, only includes
+// the word itself if it is in WordNet
+function lemmatize($word, $check_wordnet)
 {
     global $mysqli;
     
@@ -671,7 +695,7 @@ function lemmatize($word)
     }
     
     // First: check if the word is the primary form of a lemma.
-    if (is_lemma($word)) {
+    if (!$check_wordnet || is_lemma($word)) {
         $lemmas[] = [$word, null];
     }
     
@@ -693,28 +717,6 @@ WHERE morphdef.lemma = ?
     }
     
     // Third: try a sequence of formulaic substitutions.
-    function check_detachment(&$lemmas, $word, $suffix, $ending, $pos)
-    {
-        $length = strlen($suffix);
-        if (substr($word, -$length) == $suffix) {
-            $s = substr($word, 0, -$length) . $ending;
-            if (is_lemma($s)) {
-                $pair = [$s, $pos];
-                // Before adding the lemma to the list, check whether it's a duplicate.
-                // Important note: we are not accounting for the use of "nv" to
-                // indicate either a noun or a verb here.  This will produce duplicate
-                // results if there are cases where a lemma produced by "nv" rules is
-                // also produced by another rule that specifies either "n" or "v".  This
-                // could be changed without too much hassle, but it's not needed at
-                // present because this case never occurs in our rules.
-                if (!in_array($pair, $lemmas)
-                    && !in_array([$s, null], $lemmas)) {
-                    $lemmas[] = $pair;
-                }
-            }
-        }
-    }
-    
     check_detachment($lemmas, $word, "s", "", "nv");
     check_detachment($lemmas, $word, "ies", "y", "nv");
     check_detachment($lemmas, $word, "'s", "", "n");
@@ -744,7 +746,7 @@ function get_wordnet_definitions($word)
     
     $definitions = [];
 
-    $lemmas = lemmatize($word);
+    $lemmas = lemmatize($word, true);
     foreach ($lemmas as $pair) {
         $lemma = $pair[0];
         $pos = $pair[1];
@@ -783,6 +785,56 @@ GROUP BY synset.pos, sense.rank, synset.definition
             $query->free_result();
         }
     }
+    
+    return $definitions;
+}
+
+// Get a definition from Webster's 1828 dictionary.
+function get_dict_definitions($word)
+{
+    global $mysqli, $dict_db_name, $wordnet_db_name;
+    global $dicts;
+    
+    if (count($dicts) == 0) {
+        return;
+    }
+
+    // Lemmatize and discard the POS info.
+    $word = strtolower($word);
+    $lemmas = lemmatize($word, false);
+    $lemmas2 = [];
+    foreach ($lemmas as $lemma) {
+        $lemmas2[] = $lemma[0];
+    }
+    
+    mysqli_select_db($mysqli, $dict_db_name) or die('Could not select database');
+    
+    $definitions = array();
+    
+    foreach ($dicts as $dict) {
+        $deflist = [];
+    
+        foreach ($lemmas2 as $pair) {
+            $lemma = $pair;
+            $query = $mysqli->prepare("
+SELECT entry
+FROM dict
+WHERE dict.dict = ? AND dict.headword = ?
+");
+            $query->bind_param('ss', $dict, $lemma);
+            if ($query->execute()) {
+                $query->bind_result($entry);
+                while ($query->fetch()) {
+                    $deflist[] = [$entry];
+                }
+                $query->free_result();
+            }
+        }
+        
+        $definitions[$dict] = $deflist;
+    }
+    
+    mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
     
     return $definitions;
 }

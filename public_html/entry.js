@@ -116,6 +116,12 @@ function lookup_word()
     show_word_info(word, region);
 }
 
+function update_word_info_height()
+{
+    var h = window.innerHeight;
+    $("#definition-area").css("max-height", h - 383 - 115 - 24);
+}
+
 $(function () {
     $('#title-input').watermark('Enter a title (optional)');
     $('#text-input').watermark('Paste some text here');
@@ -130,6 +136,11 @@ $(function () {
     $("#word-lookup-region-input").change(function(e) {
         $("#corpus-name").text(corpus_names[$("#word-lookup-region-input").val()]);
     });
+    
+    update_word_info_height();
+    window.onresize = function () {
+        update_word_info_height();
+    };
 
     $(document).click(function(e) {
         hide_word_info();

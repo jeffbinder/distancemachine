@@ -16,8 +16,12 @@ $mysql_username = 'words';
 $mysql_passwd = '';
 $main_db_name = 'wordusage';
 $wordnet_db_name = 'wordnet30';
+$dict_db_name = 'dict';
 $log_ip_addresses = false;
 
 $regions = ['us', 'gb'];
+
+$dicts = [];
+//$dicts = ["dict1", "dict2"];
 
 ?>

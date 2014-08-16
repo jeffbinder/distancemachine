@@ -124,7 +124,6 @@ echo "totals = " . json_encode($totals) . ";\n";
     <div id="word-usage-chart"></div>
     <div><span id="usage-periods-text"></span></div>
     <hr />
-    <span id="definition-text"><a href="http://wordnet.princeton.edu/" target="_blank">WordNet</a> definitions:</span>
     <div id="definition-area"><span id="definitions"></span></div>
   </div>
   <div id="save-box">

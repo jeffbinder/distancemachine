@@ -25,12 +25,14 @@ $mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
   or die('Could not connect: ' . $mysqli->connect_error);
 mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
 
-$definitions = get_wordnet_definitions($word);
+$wordnet_definitions = get_wordnet_definitions($word);
+$dict_definitions = get_dict_definitions($word);
 
 mysqli_close($mysqli);
 
         
 echo json_encode(["counts" => $counts, "periods" => $periods,
-                  "definitions" => $definitions]);
+                  "wordnet-definitions" => $wordnet_definitions,
+                  "dict-definitions" => $dict_definitions]);
 
 ?>

@@ -13,3 +13,13 @@ window.corpus_names = {
     "gb" : "UK English",
     "us" : "US English"
 };
+
+// In order of appearance.
+window.dicts = [];
+//window.dicts = ["dict1", "dict2"];
+
+// The first name is used in the "not available" message, the other in the heading.
+window.dict_names = {
+    "dict1" : ["Dictionary 1", "Dictionary 1 (1850)"],
+    "dict2" : ["Dictionary 2", "Dictionary 2 (1900)"]
+};

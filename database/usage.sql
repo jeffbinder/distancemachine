@@ -56,3 +56,11 @@ CREATE TABLE task (
 );
 
 CREATE INDEX idx_task_status ON task (status);
+
+CREATE TABLE dict (
+  dict VARCHAR(15) NOT NULL,
+  id INT(11) DEFAULT NULL,
+  headword VARCHAR(255) NOT NULL,
+  entry TEXT COLLATE 'utf8_bin',
+  PRIMARY KEY (dict, headword)
+);

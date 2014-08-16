@@ -33,9 +33,13 @@ Further processing is needed to get the data into an efficient format for the We
 
 Finally, the application uses a cache of the data for a list of very common words, which is generated with the create_cache.py script.  The resulting file (named "CACHE") needs to be stored on the server in a location accessible by the Web server.  If you are using data for a language other than English, you should alter this script to use a different list of words.
 
-# WordNet
+# WordNet and Other Dictionaries
 
-The Web application also uses a copy of [WordNet](http://wordnet.princeton.edu) to provide definitions of words.  You can use [these scripts](https://github.com/gnugeek/wordnet-mysql) to load the WordNet data into MySQL.
+The Web application uses a copy of [WordNet](http://wordnet.princeton.edu) to provide definitions of words.  You can use [these scripts](https://github.com/gnugeek/wordnet-mysql) to load the WordNet data into MySQL.
+
+It is possible to include other dictionaries by loading them into the `dict` table in
+MySQL and listing them in the config.php and config.js files.  Headwords should be in
+lowercase.
 
 # The Web Application
 

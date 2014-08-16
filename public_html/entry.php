@@ -98,7 +98,6 @@
     <div id="word-usage-chart"></div>
     <div><span id="usage-periods-text"></span></div>
     <hr />
-    <span id="definition-text">WordNet definitions:</span>
     <div id="definition-area"><span id="definitions"></span></div>
   </div>
  </body>

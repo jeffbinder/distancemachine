@@ -146,6 +146,12 @@ function update_visibility()
     update_highlighting(window.lines);
 }
 
+function update_word_info_height()
+{
+    var h = window.innerHeight;
+    $("#definition-area").css("max-height", h - 383 - 115 - 24);
+}
+
 function get_selection()
 {
     var text = "";
@@ -279,7 +285,12 @@ $(window).load(function () {
     // No jQuery here for efficiency's sake.
     update_visibility();
     window.onscroll = update_visibility;
-    window.onresize = update_visibility;
+    
+    update_word_info_height();
+    window.onresize = function () {
+        update_visibility();
+        update_word_info_height();
+    };
     
     $("#slider").slider({
         value: end_year,
@@ -326,6 +337,16 @@ $(window).load(function () {
     $("#word-info").click(function(e) {
         hide_help_box();
     });
+    
+    // Prevent scroll wheel events from scrolling the body when the cursor is in a fixed
+    // div.  This is mainly so that the user can scroll the definition area without
+    // scrolling the document as a whole when they get to the end.
+    $("#word-info,#header")
+        .hover(function(e) {
+            $("body").css("overflow", "hidden");
+        }, function(e) {
+            $("body").css("overflow", "auto");
+        });
     
     // Periodically touch the tmp file as long as the page is open so it doesn't get
     // culled.
