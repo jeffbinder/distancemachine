@@ -9,11 +9,19 @@ mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+    $initial_year = $end_year;
 } else {
     $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+    $initial_year = filter_input(INPUT_GET, 'y', FILTER_SANITIZE_NUMBER_INT);
+    if (is_null($initial_year)) {
+        $initial_year = $end_year;
+    } else {
+        $initial_year = (int)$initial_year;
+    }
 }
 
 validate_id($id);
+validate_year($initial_year);
 
 $saved = is_text_saved($id);
 if ($saved) {
@@ -59,6 +67,7 @@ $content = $data['content'];
 <?php
 
 echo "id = " . json_encode($id) . ";\n";
+echo "initial_year = " . json_encode($initial_year) . ";\n";
 echo "region = " . json_encode($region) . ";\n";
 echo "title = " . json_encode($title) . ";\n";
 echo "saved = " . json_encode($saved) . ";\n";

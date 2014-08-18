@@ -114,6 +114,7 @@ function animate()
         set_year(current_year + 1);
         if (current_year >= end_year) {
             clearInterval(timer);
+            update_location();
             return;
         }
     }, 20);
@@ -163,20 +164,27 @@ function get_selection()
     return text;
 }
 
-function get_base_url_for_id(id)
+function get_base_url()
 {
-    return "/text/" + id;
+    return "/text/" + id + "?y=" + current_year;
 }
 
-function get_url_for_id(id)
+function get_url()
 {
-    return window.location.host + get_base_url_for_id(id);
+    return window.location.host + get_base_url();
 }
 
 function show_save_box(url)
 {
     $("#save-box").css("display", "inline");
     $("#url-area").val(url).select();
+}
+
+function update_location()
+{
+    if (saved) {
+        window.history.replaceState("", "", get_base_url());
+    }
 }
 
 function hide_save_box()
@@ -197,16 +205,16 @@ function hide_save_error_box()
 function save_text()
 {
     if (saved) {
-        var url = get_url_for_id(id);
+        var url = get_url();
         show_save_box(url);
     } else {
         var data = {"id": id};
         $.post("savetext.php", data, function (response) {
-            var url = get_url_for_id(id);
+            var url = get_url();
             show_save_box(url);
-            window.history.replaceState("", "", get_base_url_for_id(id));
             $("#save-link").text("Text saved");
             saved = true;
+            update_location();
         }, "json")
 	    .fail(function() {
             show_save_error_box();
@@ -298,9 +306,12 @@ $(window).load(function () {
         max: end_year,
         slide: function(event, ui) {
             set_year(parseInt(ui.value));
+        },
+        stop: function(event, ui) {
+            update_location();
         }
     });
-    set_year(end_year);
+    set_year(initial_year);
     
     $("#play-button").button({
         icons: {
@@ -333,6 +344,9 @@ $(window).load(function () {
         hide_help_box();
         hide_save_box();
         hide_save_error_box();
+    });
+    $("#header").click(function(e) {
+        hide_save_box();
     });
     $("#word-info").click(function(e) {
         hide_help_box();

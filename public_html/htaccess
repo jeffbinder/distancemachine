@@ -1,6 +1,6 @@
 RewriteEngine On
 RewriteRule ^/text/(.*)\.(.*) /$1.$2 [L]
-RewriteRule ^/text/(.*) /text.php?id=$1
+RewriteRule ^/text/(.*) /text.php?id=$1 [QSA,L]
 RewriteRule ^/unsaved$ /text.php
 RewriteRule ^/entry$ /entry.php
 RewriteRule ^/about$ /about.html

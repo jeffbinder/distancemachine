@@ -10,6 +10,14 @@ function validate_id($id)
     }
 }
 
+function validate_year($year)
+{
+    global $start_year, $end_year;
+    if (!(is_int($year) && $year >= $start_year && $year <= $end_year)) {
+        die("Year out of range.");
+    }
+}
+
 function validate_region($region)
 {
     global $regions;
