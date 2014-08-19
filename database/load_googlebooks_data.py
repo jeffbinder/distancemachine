@@ -12,6 +12,8 @@
 # On my system (a 2012 MacBook Pro) this script took about 4 hours to run.  MySQL
 # required an additional 70GB of scratch space to create the index.
 
+corpora = ('us', 'gb')
+
 import gzip
 import os
 import re
@@ -23,7 +25,7 @@ c = db.cursor()
 
 c.execute('''
 CREATE TABLE count_tmp (    
-    corpus ENUM('us', 'gb') NOT NULL,
+    corpus ENUM('us', 'gb', 'eng', 'fic') NOT NULL,
     
     word VARCHAR(63) NOT NULL,
 '''
@@ -37,10 +39,18 @@ CREATE TABLE count_tmp (
 
 # To include parts of speech, replace the egrep command with:
 # sed -E \'s/(.)(_(NOUN|VERB|ADJ|ADV|PRON|DET|ADP|NUM|CONJ|PRT|\\.|X))?\t/\\1\t\\3\t/\'
-for corpus in ('us', 'gb'):
+for corpus in corpora:
+
+    if corpus in ('us', 'gb'):
+        google_corpus_name = 'eng-' + corpus
+    elif corpus == 'fic':
+        google_corpus_name = 'eng-fiction'
+    else:
+        google_corpus_name = corpus
+        
     for part in '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o other p punctuation q r s t u v w x y z'.split(' '):
         print 'Loading', corpus, part   
-        filename = 'googlebooks-eng-{0}-all-1gram-20120701-{1}.gz'.format(corpus, part)
+        filename = 'googlebooks-{0}-all-1gram-20120701-{1}.gz'.format(google_corpus_name, part)
         os.system('mkfifo /tmp/input.dat; '
                 + 'chmod 666 /tmp/input.dat; '
                 + 'cat ' + filename + ' | gunzip '
@@ -53,7 +63,7 @@ for corpus in ('us', 'gb'):
                 + 'rm /tmp/input.dat; ')
 
     print 'Loading', corpus, 'totals'
-    filename = 'googlebooks-eng-{0}-all-totalcounts-20120701.txt'.format(corpus)
+    filename = 'googlebooks-{0}-all-totalcounts-20120701.txt'.format(google_corpus_name)
     url = 'http://storage.googleapis.com/books/ngrams/books/' + filename
     f = open(filename, 'r')
     data = f.read()
@@ -71,12 +81,16 @@ for corpus in ('us', 'gb'):
     db.commit()
 
 print 'Creating index...'
-c.execute('SET myisam_sort_buffer_size = 1024 * 1024 * 1024 * 100')
+c.execute('SET myisam_sort_buffer_size = 1024 * 1024 * 1024 * 4')
 c.execute('CREATE INDEX idx_count_word_tmp ON count_tmp (word) USING HASH')
 db.commit()
 
 # This is to combine entries for the same word with different capitalization.
 print 'Condensing data...'
+try:
+    c.execute('ALTER TABLE count DROP INDEX idx_count_word')
+except:
+    pass
 c.execute('''
 INSERT INTO count
 SELECT corpus, word, year, sum(ntokens)
@@ -85,7 +99,7 @@ GROUP BY corpus, word, year
 ''')
 
 print 'Creating final index...'
-c.execute('SET myisam_sort_buffer_size = 1024 * 1024 * 1024 * 100')
+c.execute('SET myisam_sort_buffer_size = 1024 * 1024 * 1024 * 4')
 c.execute('CREATE INDEX idx_count_word ON count (word) USING HASH')
 db.commit()
 

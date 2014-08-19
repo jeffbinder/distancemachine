@@ -79,7 +79,6 @@ def classes_for_word(word, corpus):
     return ''.join(classes)
     
     
-c.execute('TRUNCATE TABLE word_classes')
 try:
     c.execute('ALTER TABLE word_classes DROP INDEX idx_word_classes')
 except:

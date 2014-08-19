@@ -5,7 +5,7 @@ CREATE DATABASE wordusage;
 USE wordusage;
 
 CREATE TABLE count (    
-    corpus ENUM('us', 'gb') NOT NULL,
+    corpus ENUM('us', 'gb', 'eng', 'fic') NOT NULL,
     
     word VARCHAR(63) NOT NULL,
     --pos VARCHAR(15) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE count (
 ) ENGINE=MyISAM;
 
 CREATE TABLE total (
-    corpus ENUM('us', 'gb'),
+    corpus ENUM('us', 'gb', 'eng', 'fic') NOT NULL,
     
     year SMALLINT NOT NULL,
     ntokens BIGINT NOT NULL,
@@ -26,13 +26,13 @@ CREATE TABLE total (
 );
 
 CREATE TABLE usage_periods (
-    corpus ENUM('us', 'gb') NOT NULL,
+    corpus ENUM('us', 'gb', 'eng', 'fic') NOT NULL,
     word VARCHAR(63) NOT NULL,
     periods VARCHAR(255) NOT NULL
 ) ENGINE=MyISAM;
 
 CREATE TABLE word_classes (
-    corpus ENUM('us', 'gb') NOT NULL,
+    corpus ENUM('us', 'gb', 'eng', 'fic') NOT NULL,
     word VARCHAR(63) NOT NULL,
     classes VARCHAR(1024) NOT NULL
 ) ENGINE=MyISAM;
@@ -41,7 +41,7 @@ CREATE TABLE word_classes (
 CREATE TABLE task (
     id VARCHAR(63) NOT NULL PRIMARY KEY,
     title TEXT,
-    corpus ENUM('us', 'gb'),
+    corpus ENUM('us', 'gb', 'eng', 'fic'),
     total_characters BIGINT,
     characters_completed BIGINT,
     words_completed BIGINT,

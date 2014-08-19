@@ -3,6 +3,8 @@ import numpy
 import re
 import scipy.stats
 
+corpora = ('us', 'gb')
+
 # import matplotlib.pyplot as plt
 
 import MySQLdb
@@ -14,7 +16,7 @@ c = db.cursor()
 
 # Get the total usage data from the database.
 totals = {}
-for corpus in ('us', 'gb'):
+for corpus in corpora:
     c.execute('''
         SELECT year, ntokens
         FROM total
@@ -141,7 +143,6 @@ def compute_usage_periods(word, corpus, plot=False):
 
 print 'Computing usage periods...'
 
-c.execute('TRUNCATE TABLE usage_periods')
 try:
     c.execute('ALTER TABLE usage_periods DROP INDEX idx_usage_periods')
 except:
@@ -157,7 +158,7 @@ for i, (word,) in enumerate(rows):
     if i % 100 == 0:
         print i, '/', nrows
         db.commit()
-    for corpus in ('us', 'gb'):
+    for corpus in corpora:
         periods = compute_usage_periods(word, corpus)
         periods_string = ';'.join('{0}-{1}'.format(a, b or '') for (a, b) in periods)
         if periods_string:
