@@ -36,16 +36,15 @@ CREATE TABLE count_tmp (
 ''')
 
 # To include parts of speech, replace the egrep command with:
-# sed -E \'s/(.)(_([A-Z]+))?\t/\\1\t\\3\t/\'
+# sed -E \'s/(.)(_(NOUN|VERB|ADJ|ADV|PRON|DET|ADP|NUM|CONJ|PRT|\\.|X))?\t/\\1\t\\3\t/\'
 for corpus in ('us', 'gb'):
     for part in '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o other p punctuation q r s t u v w x y z'.split(' '):
-        print corpus, part
+        print 'Loading', corpus, part   
         filename = 'googlebooks-eng-{0}-all-1gram-20120701-{1}.gz'.format(corpus, part)
-        url = 'http://storage.googleapis.com/books/ngrams/books/' + filename
         os.system('mkfifo /tmp/input.dat; '
                 + 'chmod 666 /tmp/input.dat; '
-                + 'curl ' + url + ' | gunzip '
-                    + '| egrep -v \'._[A-Z]+\t\' '
+                + 'cat ' + filename + ' | gunzip '
+                    + '| egrep -v \'._(NOUN|VERB|ADJ|ADV|PRON|DET|ADP|NUM|CONJ|PRT|\\.|X)\t\' '
                     + '> /tmp/input.dat &'
                 + 'mysql --local_infile=1 -u words -e "LOAD DATA LOCAL INFILE \'/tmp/input.dat\' '
                 + 'INTO TABLE count_tmp FIELDS ESCAPED BY \'\' '
@@ -53,10 +52,10 @@ for corpus in ('us', 'gb'):
                 + 'SET corpus = \'{0}\';" wordusage; '.format(corpus)
                 + 'rm /tmp/input.dat; ')
 
-    print corpus, 'totals'
-    url = 'http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-{0}-all-totalcounts-20120701.txt'.format(corpus)
-    os.system('curl ' + url + ' >/tmp/totals.txt')
-    f = open('/tmp/totals.txt', 'r')
+    print 'Loading', corpus, 'totals'
+    filename = 'googlebooks-eng-{0}-all-totalcounts-20120701.txt'.format(corpus)
+    url = 'http://storage.googleapis.com/books/ngrams/books/' + filename
+    f = open(filename, 'r')
     data = f.read()
     data = data[2:-1]
     for line in data.split('\t'):
