@@ -217,7 +217,7 @@ function get_counts($word, $region)
     
     $counts = [];
     $query = $mysqli->prepare("SELECT year, sum(ntokens) FROM count
-WHERE word = ? AND region = ? GROUP BY year");
+WHERE word = ? AND region = ? AND pos = '' GROUP BY year");
     $query->bind_param('ss', $word, $region);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($year, $count);

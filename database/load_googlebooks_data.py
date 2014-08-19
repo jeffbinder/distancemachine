@@ -1,9 +1,8 @@
 # Loads Google Books 1grams data from the .gz files available here:
 #   http://storage.googleapis.com/books/ngrams/books/datasetsv2.html
 # into a MySQL database.  You will need to create the database using the the schema in
-# usage.sql, insert the appropriate credentials into the "MySQLdb.connect" line of this
-# script, and replace the path "../googlebooks-datasets/" with the path to the directory
-# where the .gz files are located.  This script is designed to work with the 2012 version
+# usage.sql and insert the appropriate credentials into the "MySQLdb.connect" line of this
+# script.  The script will automatically download and install the 2012 version
 # of the data.
 #
 # This version only loads 1grams.
@@ -29,49 +28,39 @@ except:
     pass
 db.commit()
 
-re_filename = re.compile(r'googlebooks-(?P<language>[^-]*)-(?P<region>[^-]*)'
-                       + r'-(?P<subset>[^-]*)-(?P<datatype>[^-]*)-(?P<date>[^-]*)'
-                       + r'(-(?P<part>[^-]*))?.(gz|txt)')
+for region in ('us', 'gb'):
+    for part in '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o other p punctuation q r s t u v w x y z'.split(' '):
+        print region, part
+        filename = 'googlebooks-eng-{0}-all-1gram-20120701-{1}.gz'.format(region, part)
+        url = 'http://storage.googleapis.com/books/ngrams/books/' + filename
+        os.system('mkfifo /tmp/input.dat; '
+                + 'chmod 666 /tmp/input.dat; '
+                + 'curl ' + url + ' | gunzip ' # | egrep "^[a-zA-Z\'&-]+[\\t_]"
+                    + '| sed -E \'s/(.)(_([A-Z]+))?\t/\\1\t\\3\t/\' '
+                    + '> /tmp/input.dat &'
+                + 'mysql --local_infile=1 -u words -e "LOAD DATA LOCAL INFILE \'/tmp/input.dat\' '
+                + 'INTO TABLE count FIELDS ESCAPED BY \'\' '
+                + '(word, pos, year, ntokens, nbooks) '
+                + 'SET region = \'{0}\';" wordusage; '.format(region)
+                + 'rm /tmp/input.dat; ')
+        db.commit()
 
-for filename in os.listdir('googlebooks-datasets/'):
-    print filename
-    m = re_filename.match(filename)
-    if m:
-        region = m.group('region')
-        datatype = m.group('datatype')
-        part = m.group('part')
-        if part == 'pos':
-            continue
-        filename = 'googlebooks-datasets/' + filename
-        if datatype == '1gram':
-            os.system('mkfifo /tmp/input.dat; '
-                    + 'chmod 666 /tmp/input.dat; '
-                    + 'gunzip -c "{0}" '.format(filename) # | egrep "^[a-zA-Z\'&-]+[\\t_]"
-                        + '| sed -E \'s/(.)(_([A-Z]*))?\t/\\1\t\\3\t/\' '
-                        + '> /tmp/input.dat &'
-                    + 'mysql --local_infile=1 -u words -e "LOAD DATA LOCAL INFILE \'/tmp/input.dat\' '
-                    + 'INTO TABLE count FIELDS ESCAPED BY \'\' '
-                    + '(word, pos, year, ntokens, nbooks) '
-                    + 'SET region = \'{0}\';" wordusage; '.format(region)
-                    + 'rm /tmp/input.dat; ')
-        elif datatype == 'totalcounts':
-            f = open(filename, 'r')
-            data = f.read()
-            data = data[2:-1]
-            for line in data.split('\t'):
-                year, ntokens, npages, nbooks = line.split(',')
-                year = int(year)
-                ntokens = int(ntokens)
-                npages = int(npages)
-                nbooks = int(nbooks)
-                c.execute('''
-                    INSERT INTO total (year, region, ntokens, npages, nbooks)
-                    VALUES (%s, %s, %s, %s, %s)
-                    ''', (year, region, ntokens, npages, nbooks))
-        else:
-            print 'Don\'t know what to do with file', filename
-    else:
-        print 'Don\'t know what to do with file', filename
+    print region, 'totals'
+    url = 'http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-{0}-all-totalcounts-20120701.txt'.format(region)
+    os.system('curl ' + url + ' >/tmp/totals.txt')
+    f = open('/tmp/totals.txt', 'r')
+    data = f.read()
+    data = data[2:-1]
+    for line in data.split('\t'):
+        year, ntokens, npages, nbooks = line.split(',')
+        year = int(year)
+        ntokens = int(ntokens)
+        npages = int(npages)
+        nbooks = int(nbooks)
+        c.execute('''
+            INSERT INTO total (year, region, ntokens, npages, nbooks)
+            VALUES (%s, %s, %s, %s, %s)
+            ''', (year, region, ntokens, npages, nbooks))
     db.commit()
 
 print 'Creating index...'

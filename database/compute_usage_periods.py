@@ -37,6 +37,7 @@ def compute_usage_periods(word, region, plot=False):
         FROM count
         WHERE word = %s
             AND region = %s
+            AND pos = ''
         GROUP BY year
         ''', (word, region))
     counts = dict(c.fetchall())
