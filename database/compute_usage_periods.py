@@ -46,15 +46,15 @@ def compute_usage_periods(word, corpus, plot=False):
     if nyears <= 0:
         return []
     
-    corpusal_totals = totals[corpus]
+    corpus_totals = totals[corpus]
 
     # Figure out how the states will be defined.  State 0 assumes mean
     # 0; state 1 assumes mean = to the average frequency in all years.
     max_frequency = 0.0
     total_frequency = 0.0
     for y in xrange(min_year, max_year + 1):
-        if y in corpusal_totals:
-            freq = float(counts.get(y, 0.0)) / float(corpusal_totals[y])
+        if y in corpus_totals:
+            freq = float(counts.get(y, 0.0)) / float(corpus_totals[y])
             if freq > max_frequency:
                 max_frequency = freq
             total_frequency += freq
@@ -95,7 +95,7 @@ def compute_usage_periods(word, corpus, plot=False):
             costs = [C[ell] + transition_cost(ell, j) for ell in xrange(k)]
             ell = numpy.argmin(costs)
             logprob = logpdf(j, counts.get(min_year + t, 0.0),
-                             corpusal_totals.get(min_year + t, 0.0))
+                             corpus_totals.get(min_year + t, 0.0))
             Cprime[j] = costs[ell] - logprob
             for i in xrange(t):
                 qprime[j][i] = q[ell][i]
@@ -127,8 +127,8 @@ def compute_usage_periods(word, corpus, plot=False):
     # y2 = []
     # for year in xrange(min_year, max_year + 1):
     #     x.append(year)
-    #     if year in corpusal_totals:
-    #         y1.append(float(counts.get(year, 0.0)) / float(corpusal_totals[year]))
+    #     if year in corpus_totals:
+    #         y1.append(float(counts.get(year, 0.0)) / float(corpus_totals[year]))
     #     else:
     #         y1.append(0.0)
     #         y2.append(probabilities[q[year - min_year]])
