@@ -5,7 +5,8 @@
 # script.  The script will automatically download and install the 2012 version
 # of the data.
 #
-# This version only loads 1grams.
+# This version only loads 1grams, and it removes part of speech tags, book counts, and
+# the distinctions between different capitalizations of words.
 #
 # A database I created for the American and British 1grams takes up about 37GB total.
 # On my system (a 2012 MacBook Pro) this script took about 4 hours to run.  MySQL
@@ -20,33 +21,40 @@ import MySQLdb
 db = MySQLdb.connect(user='words', db='wordusage')
 c = db.cursor()
 
-c.execute('TRUNCATE TABLE count')
-c.execute('TRUNCATE TABLE total')
-try:
-    c.execute('ALTER TABLE count DROP INDEX idx_count_word')
-except:
-    pass
-db.commit()
+c.execute('''
+CREATE TABLE count_tmp (    
+    corpus ENUM('us', 'gb') NOT NULL,
+    
+    word VARCHAR(63) NOT NULL,
+'''
+    #pos VARCHAR(15) NOT NULL,
++'''
+    year SMALLINT NOT NULL,
+    ntokens BIGINT NOT NULL,
+    nbooks MEDIUMINT NOT NULL
+) ENGINE=MyISAM;
+''')
 
-for region in ('us', 'gb'):
+# To include parts of speech, replace the egrep command with:
+# sed -E \'s/(.)(_([A-Z]+))?\t/\\1\t\\3\t/\'
+for corpus in ('us', 'gb'):
     for part in '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o other p punctuation q r s t u v w x y z'.split(' '):
-        print region, part
-        filename = 'googlebooks-eng-{0}-all-1gram-20120701-{1}.gz'.format(region, part)
+        print corpus, part
+        filename = 'googlebooks-eng-{0}-all-1gram-20120701-{1}.gz'.format(corpus, part)
         url = 'http://storage.googleapis.com/books/ngrams/books/' + filename
         os.system('mkfifo /tmp/input.dat; '
                 + 'chmod 666 /tmp/input.dat; '
-                + 'curl ' + url + ' | gunzip ' # | egrep "^[a-zA-Z\'&-]+[\\t_]"
-                    + '| sed -E \'s/(.)(_([A-Z]+))?\t/\\1\t\\3\t/\' '
+                + 'curl ' + url + ' | gunzip '
+                    + '| egrep -v \'._[A-Z]+\t\' '
                     + '> /tmp/input.dat &'
                 + 'mysql --local_infile=1 -u words -e "LOAD DATA LOCAL INFILE \'/tmp/input.dat\' '
-                + 'INTO TABLE count FIELDS ESCAPED BY \'\' '
-                + '(word, pos, year, ntokens, nbooks) '
-                + 'SET region = \'{0}\';" wordusage; '.format(region)
+                + 'INTO TABLE count_tmp FIELDS ESCAPED BY \'\' '
+                + '(word, year, ntokens, nbooks) '
+                + 'SET corpus = \'{0}\';" wordusage; '.format(corpus)
                 + 'rm /tmp/input.dat; ')
-        db.commit()
 
-    print region, 'totals'
-    url = 'http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-{0}-all-totalcounts-20120701.txt'.format(region)
+    print corpus, 'totals'
+    url = 'http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-{0}-all-totalcounts-20120701.txt'.format(corpus)
     os.system('curl ' + url + ' >/tmp/totals.txt')
     f = open('/tmp/totals.txt', 'r')
     data = f.read()
@@ -58,12 +66,30 @@ for region in ('us', 'gb'):
         npages = int(npages)
         nbooks = int(nbooks)
         c.execute('''
-            INSERT INTO total (year, region, ntokens, npages, nbooks)
+            INSERT INTO total (year, corpus, ntokens, npages, nbooks)
             VALUES (%s, %s, %s, %s, %s)
-            ''', (year, region, ntokens, npages, nbooks))
+            ''', (year, corpus, ntokens, npages, nbooks))
     db.commit()
 
 print 'Creating index...'
 c.execute('SET myisam_sort_buffer_size = 1024 * 1024 * 1024 * 100')
+c.execute('CREATE INDEX idx_count_word_tmp ON count_tmp (word) USING HASH')
+db.commit()
+
+# This is to combine entries for the same word with different capitalization.
+print 'Condensing data...'
+c.execute('''
+INSERT INTO count
+SELECT corpus, word, year, sum(ntokens)
+FROM count_tmp
+GROUP BY corpus, word, year
+''')
+
+print 'Creating final index...'
+c.execute('SET myisam_sort_buffer_size = 1024 * 1024 * 1024 * 100')
 c.execute('CREATE INDEX idx_count_word ON count (word) USING HASH')
+db.commit()
+
+print 'Dropping tmp table...'
+#c.execute('DROP TABLE count_tmp')
 db.commit()

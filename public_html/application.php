@@ -18,11 +18,11 @@ function validate_year($year)
     }
 }
 
-function validate_region($region)
+function validate_corpus($corpus)
 {
-    global $regions;
-    if (!(is_string($region) && in_array($region, $regions, true))) {
-        die("Invalid region!");
+    global $corpora;
+    if (!(is_string($corpus) && in_array($corpus, $corpora, true))) {
+        die("Invalid corpus!");
     }
 }
 
@@ -80,11 +80,11 @@ function is_id_registered($id)
     return (bool)($query->num_rows > 0);
 }
 
-function set_task_data($id, $title, $region)
+function set_task_data($id, $title, $corpus)
 {
     global $mysqli;
-    $query = $mysqli->prepare("UPDATE task SET title = ?, region = ? WHERE id = ?");
-    $query->bind_param('sss', $title, $region, $id);
+    $query = $mysqli->prepare("UPDATE task SET title = ?, corpus = ? WHERE id = ?");
+    $query->bind_param('sss', $title, $corpus, $id);
     $query->execute() or die('Query failed: ' . $mysqli->error);
 }
 
@@ -189,8 +189,8 @@ function set_task_saved($id)
     $query->execute() or die('Query failed: ' . $mysqli->error);
 }
 
-// Get the yearly totals for a given region.
-function get_totals($region)
+// Get the yearly totals for a given corpus.
+function get_totals($corpus)
 {
     global $mysqli;
     global $data_start_year;
@@ -198,8 +198,8 @@ function get_totals($region)
     $totals = [];
     
     $query = $mysqli->prepare("SELECT SQL_CACHE year, ntokens FROM total
-WHERE region = ? AND year >= ?");
-    $query->bind_param('si', $region, $data_start_year);
+WHERE corpus = ? AND year >= ?");
+    $query->bind_param('si', $corpus, $data_start_year);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($year, $ntokens);
     while ($query->fetch()) {
@@ -211,14 +211,14 @@ WHERE region = ? AND year >= ?");
 }
 
 // Get the counts for a word in each year.
-function get_counts($word, $region)
+function get_counts($word, $corpus)
 {
     global $mysqli;
     
     $counts = [];
-    $query = $mysqli->prepare("SELECT year, sum(ntokens) FROM count
-WHERE word = ? AND region = ? AND pos = '' GROUP BY year");
-    $query->bind_param('ss', $word, $region);
+    $query = $mysqli->prepare("SELECT year, ntokens FROM count
+WHERE word = ? AND corpus = ? GROUP BY year");
+    $query->bind_param('ss', $word, $corpus);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($year, $count);
     while ($query->fetch()) {
@@ -245,15 +245,15 @@ function parse_period($str)
 }
 
 // Fetch the usage periods for a word from the database and parse the string.
-function get_usage_periods($word, $region)
+function get_usage_periods($word, $corpus)
 {
     global $mysqli;
     
     $word = strtolower($word);
   
     $query = $mysqli->prepare("SELECT periods FROM usage_periods
-WHERE word = ? AND region = ?");
-    $query->bind_param('ss', $word, $region);
+WHERE word = ? AND corpus = ?");
+    $query->bind_param('ss', $word, $corpus);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($periods);
 
@@ -281,19 +281,19 @@ function load_cache()
     $cache_data = json_decode($cache_data, true);
 }
 
-function get_classes_from_cache($word, $region)
+function get_classes_from_cache($word, $corpus)
 {
     global $cache_data;
-    if (array_key_exists($word, $cache_data[$region])) {
-        return $cache_data[$region][$word];
+    if (array_key_exists($word, $cache_data[$corpus])) {
+        return $cache_data[$corpus][$word];
     }
     return NULL;
 }
 
-function add_classes_to_cache($word, $region, $classes)
+function add_classes_to_cache($word, $corpus, $classes)
 {
     global $cache_data;
-    $cache_data[$region][$word] = $classes;
+    $cache_data[$corpus][$word] = $classes;
 }
 
 // Gets the usage period classes that will be applied to a given token.
@@ -303,20 +303,20 @@ function get_classes_for_word($word)
     
     global $start_year;
     global $end_year;
-    global $region;
+    global $corpus;
 
     global $cache_hits;
 
     $word = strtolower($word);
 
-    if (!is_null($classes = get_classes_from_cache($word, $region))) {
+    if (!is_null($classes = get_classes_from_cache($word, $corpus))) {
         $cache_hits += 1;
         return $classes;
     }
 
     $query = $mysqli->prepare("SELECT SQL_CACHE classes FROM word_classes
-WHERE word = ? AND region = ?");
-    $query->bind_param('ss', $word, $region);
+WHERE word = ? AND corpus = ?");
+    $query->bind_param('ss', $word, $corpus);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($classes);
 
@@ -328,14 +328,14 @@ WHERE word = ? AND region = ?");
     
     validate_classes($classes);
 
-    //add_classes_to_cache($word, $region, $classes);
+    //add_classes_to_cache($word, $corpus, $classes);
 
     return $classes;
 }
 
 // Generates the main content of an annotated text, saving it to
 // the tmpdir and updating the database accordingly.
-function gen_annotated_text($id, $text, $title, $region)
+function gen_annotated_text($id, $text, $title, $corpus)
 {
   global $max_linelen;
   
@@ -344,7 +344,7 @@ function gen_annotated_text($id, $text, $title, $region)
   
   $running = true;
   register_shutdown_function("set_task_aborted_if_running", $id);
-  set_task_data($id, $title, $region);
+  set_task_data($id, $title, $corpus);
   set_task_running($id);
   
   $textlen = strlen($text);
@@ -488,7 +488,7 @@ function gen_annotated_text($id, $text, $title, $region)
   
   update_task_progress($id, $textlen, $nwords, $nlines, $nannotations, $cache_hits);
   
-  save_text_to_tmp_file($id, $content, $title, $region);
+  save_text_to_tmp_file($id, $content, $title, $corpus);
   
   set_task_completed($id);
   $running = false;
@@ -545,11 +545,11 @@ function get_tmp_filename_from_id($id)
 }
 
 // Save a text to the tmpdir so that it can be accessed later.
-function save_text_to_tmp_file($id, $content, $title, $region)
+function save_text_to_tmp_file($id, $content, $title, $corpus)
 {
   $filename = get_tmp_filename_from_id($id);
 
-  $data = ["content" => $content, "title" => $title, "region" => $region];
+  $data = ["content" => $content, "title" => $title, "corpus" => $corpus];
   $data = json_encode($data);
   $data = gzcompress($data);
   

@@ -19,7 +19,7 @@ $wordnet_db_name = 'wordnet30';
 $dict_db_name = 'dict';
 $log_ip_addresses = false;
 
-$regions = ['us', 'gb'];
+$corpora = ['us', 'gb'];
 
 $dicts = [];
 //$dicts = ["dict1", "dict2"];

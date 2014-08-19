@@ -14,32 +14,27 @@ c = db.cursor()
 
 # Get the total usage data from the database.
 totals = {}
-c.execute('''
-    SELECT year, ntokens
-    FROM total
-    WHERE region = 'us'
-    ''')
-totals['us'] = dict(c.fetchall())
-c.execute('''
-    SELECT year, ntokens
-    FROM total
-    WHERE region = 'gb'
-    ''')
-totals['gb'] = dict(c.fetchall())
+for corpus in ('us', 'gb'):
+    c.execute('''
+        SELECT year, ntokens
+        FROM total
+        WHERE corpus = %s
+        ''', (corpus,))
+    totals[corpus] = dict(c.fetchall())
 
 # This function computes the usage periods for a given word using the
 # Viterbi algorithm, using the data taken from MySQL.
-def compute_usage_periods(word, region, plot=False):
+def compute_usage_periods(word, corpus, plot=False):
         
     # Get the usage data from the database.
     c.execute('''
         SELECT year, sum(ntokens)
         FROM count
         WHERE word = %s
-            AND region = %s
+            AND corpus = %s
             AND pos = ''
         GROUP BY year
-        ''', (word, region))
+        ''', (word, corpus))
     counts = dict(c.fetchall())
     years = counts.keys()
     if not years:
@@ -53,15 +48,15 @@ def compute_usage_periods(word, region, plot=False):
     if nyears <= 0:
         return []
     
-    regional_totals = totals[region]
+    corpusal_totals = totals[corpus]
 
     # Figure out how the states will be defined.  State 0 assumes mean
     # 0; state 1 assumes mean = to the average frequency in all years.
     max_frequency = 0.0
     total_frequency = 0.0
     for y in xrange(min_year, max_year + 1):
-        if y in regional_totals:
-            freq = float(counts.get(y, 0.0)) / float(regional_totals[y])
+        if y in corpusal_totals:
+            freq = float(counts.get(y, 0.0)) / float(corpusal_totals[y])
             if freq > max_frequency:
                 max_frequency = freq
             total_frequency += freq
@@ -102,7 +97,7 @@ def compute_usage_periods(word, region, plot=False):
             costs = [C[ell] + transition_cost(ell, j) for ell in xrange(k)]
             ell = numpy.argmin(costs)
             logprob = logpdf(j, counts.get(min_year + t, 0.0),
-                             regional_totals.get(min_year + t, 0.0))
+                             corpusal_totals.get(min_year + t, 0.0))
             Cprime[j] = costs[ell] - logprob
             for i in xrange(t):
                 qprime[j][i] = q[ell][i]
@@ -134,8 +129,8 @@ def compute_usage_periods(word, region, plot=False):
     # y2 = []
     # for year in xrange(min_year, max_year + 1):
     #     x.append(year)
-    #     if year in regional_totals:
-    #         y1.append(float(counts.get(year, 0.0)) / float(regional_totals[year]))
+    #     if year in corpusal_totals:
+    #         y1.append(float(counts.get(year, 0.0)) / float(corpusal_totals[year]))
     #     else:
     #         y1.append(0.0)
     #         y2.append(probabilities[q[year - min_year]])
@@ -164,14 +159,14 @@ for i, (word,) in enumerate(rows):
     if i % 100 == 0:
         print i, '/', nrows
         db.commit()
-    for region in ('us', 'gb'):
-        periods = compute_usage_periods(word, region)
+    for corpus in ('us', 'gb'):
+        periods = compute_usage_periods(word, corpus)
         periods_string = ';'.join('{0}-{1}'.format(a, b or '') for (a, b) in periods)
         if periods_string:
             c.execute('''
-                INSERT INTO usage_periods (word, region, periods)
+                INSERT INTO usage_periods (word, corpus, periods)
                 VALUES (%s, %s, %s)
-                ''', (word.lower(), region, periods_string))     
+                ''', (word.lower(), corpus, periods_string))     
 db.commit()
     
 print 'Creating index...'

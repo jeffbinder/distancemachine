@@ -5,36 +5,35 @@ CREATE DATABASE wordusage;
 USE wordusage;
 
 CREATE TABLE count (    
+    corpus ENUM('us', 'gb') NOT NULL,
+    
     word VARCHAR(63) NOT NULL,
-    pos VARCHAR(15) NOT NULL,
-    
+    --pos VARCHAR(15) NOT NULL,
     year SMALLINT NOT NULL,
-    region ENUM('us', 'gb') NOT NULL,
-    
-    ntokens BIGINT NOT NULL,
-    nbooks MEDIUMINT NOT NULL
+    ntokens BIGINT NOT NULL--,
+    --nbooks MEDIUMINT NOT NULL
 ) ENGINE=MyISAM;
 
 CREATE TABLE total (
-    year SMALLINT NOT NULL,
-    region ENUM('us', 'gb'),
+    corpus ENUM('us', 'gb'),
     
+    year SMALLINT NOT NULL,
     ntokens BIGINT NOT NULL,
     npages BIGINT NOT NULL,
     nbooks BIGINT NOT NULL,
     
-    PRIMARY KEY (year, region)
+    PRIMARY KEY (year, corpus)
 );
 
 CREATE TABLE usage_periods (
+    corpus ENUM('us', 'gb') NOT NULL,
     word VARCHAR(63) NOT NULL,
-    region ENUM('us', 'gb') NOT NULL,
     periods VARCHAR(255) NOT NULL
 ) ENGINE=MyISAM;
 
 CREATE TABLE word_classes (
+    corpus ENUM('us', 'gb') NOT NULL,
     word VARCHAR(63) NOT NULL,
-    region ENUM('us', 'gb') NOT NULL,
     classes VARCHAR(1024) NOT NULL
 ) ENGINE=MyISAM;
 
@@ -42,7 +41,7 @@ CREATE TABLE word_classes (
 CREATE TABLE task (
     id VARCHAR(63) NOT NULL PRIMARY KEY,
     title TEXT,
-    region ENUM('us', 'gb'),
+    corpus ENUM('us', 'gb'),
     total_characters BIGINT,
     characters_completed BIGINT,
     words_completed BIGINT,

@@ -53,15 +53,15 @@ f = open('CACHE', 'w')
 data = {'us': {}, 'gb': {}}
 for word in words:
     word = word.lower()
-    for region in ['us', 'gb']:
-        c.execute("SELECT classes FROM word_classes WHERE word = %s AND region = %s",
-                  (word, region))
+    for corpus in ['us', 'gb']:
+        c.execute("SELECT classes FROM word_classes WHERE word = %s AND corpus = %s",
+                  (word, corpus))
         row = c.fetchone()
         if row:
             classes, = row
         else:
             classes = ""
-        data[region][word] = classes
+        data[corpus][word] = classes
 
 f.write(json.dumps(data))
 f.close()

@@ -14,7 +14,7 @@ function generate()
 
     var text = $("#text-input").val(),
         title = $("#title-input").val(),
-        region = $("#region-input").val();
+        corpus = $("#corpus-input").val();
         
     if (!title) {
         title = "Untitled";
@@ -43,7 +43,7 @@ function generate()
     }
     var id = generated_id;
     
-    var data = {"id": id, "text": text, "title": title, "region": region};
+    var data = {"id": id, "text": text, "title": title, "corpus": corpus};
     window.generate_xhr = $.ajax({
         type: "POST",
         url: "gentext.php",
@@ -109,11 +109,11 @@ function load_totals()
 function lookup_word()
 {
     var word = $("#word-lookup").val();
-    var region = $("#word-lookup-region-input").val();
+    var corpus = $("#word-lookup-corpus-input").val();
     if (!window.totals) {
         load_totals();
     }
-    show_word_info(word, region);
+    show_word_info(word, corpus);
 }
 
 function update_word_info_height()
@@ -132,9 +132,9 @@ $(function () {
         }
     });
     
-    $("#corpus-name").text(corpus_names[$("#word-lookup-region-input").val()]);
-    $("#word-lookup-region-input").change(function(e) {
-        $("#corpus-name").text(corpus_names[$("#word-lookup-region-input").val()]);
+    $("#corpus-name").text(corpus_names[$("#word-lookup-corpus-input").val()]);
+    $("#word-lookup-corpus-input").change(function(e) {
+        $("#corpus-name").text(corpus_names[$("#word-lookup-corpus-input").val()]);
     });
     
     update_word_info_height();

@@ -6,14 +6,14 @@ end_year = 2020
 db = MySQLdb.connect(user='words', db='wordusage')
 c = db.cursor()
 
-def get_usage_periods(word, region):
+def get_usage_periods(word, corpus):
     word = word.lower()
     
     c.execute('''
         SELECT periods
         FROM usage_periods
-        WHERE word = %s AND region = %s
-        ''', (word, region))
+        WHERE word = %s AND corpus = %s
+        ''', (word, corpus))
     
     row = c.fetchone()
     if row:
@@ -61,9 +61,9 @@ def classes_for_period(y1, y2, prefix):
             y += 1
     return classes
     
-def classes_for_word(word, region):
+def classes_for_word(word, corpus):
     classes = []
-    ranges = get_usage_periods(word, region)
+    ranges = get_usage_periods(word, corpus)
     nranges = len(ranges)
     if nranges:
         classes += classes_for_period(start_year, ranges[0][0] - 1, 'n')
@@ -86,21 +86,21 @@ except:
     pass
 
 c.execute('''
-    SELECT word, region
+    SELECT word, corpus
     FROM usage_periods
     ''')
 rows = c.fetchall()
 nrows = len(rows)
-for i, (word, region) in enumerate(rows):
+for i, (word, corpus) in enumerate(rows):
     if i % 10000 == 0:
         print i, '/', nrows
         db.commit()
-    classes = classes_for_word(word, region)
+    classes = classes_for_word(word, corpus)
     if classes:
         c.execute('''
-            INSERT INTO word_classes (word, region, classes)
+            INSERT INTO word_classes (word, corpus, classes)
             VALUES (%s, %s, %s)
-            ''', (word.lower(), region, classes))     
+            ''', (word.lower(), corpus, classes))     
 db.commit()
     
 print 'Creating index...'

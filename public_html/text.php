@@ -29,7 +29,7 @@ if ($saved) {
 } else {
     $data = get_text_from_tmp_file($id);
 }
-$region = $data['region'];
+$corpus = $data['corpus'];
 $title = $data['title'];
 $content = $data['content'];
 
@@ -68,12 +68,12 @@ $content = $data['content'];
 
 echo "id = " . json_encode($id) . ";\n";
 echo "initial_year = " . json_encode($initial_year) . ";\n";
-echo "region = " . json_encode($region) . ";\n";
+echo "corpus = " . json_encode($corpus) . ";\n";
 echo "title = " . json_encode($title) . ";\n";
 echo "saved = " . json_encode($saved) . ";\n";
 
 // Preload the total word counts, since they may be used multiple times.
-$totals = [$region => get_totals($region)];
+$totals = [$corpus => get_totals($corpus)];
 echo "totals = " . json_encode($totals) . ";\n";
 
 ?>

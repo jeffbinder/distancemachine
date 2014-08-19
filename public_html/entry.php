@@ -53,7 +53,7 @@
    <div style="margin-top:5px;width:600px">
     <div style="float:left">
      Choose a corpus:
-     <select id="region-input" name="region">
+     <select id="corpus-input" name="corpus">
       <option value="us">US English</option>
       <option value="gb">UK English</option>
      </select>
@@ -67,7 +67,7 @@
   <div class="box" id="word-lookup-area">
    Or look up a word: <input type="text" id="word-lookup">
     <div style="float:right">
-     <select id="word-lookup-region-input" name="region">
+     <select id="word-lookup-corpus-input" name="corpus">
       <option value="us">US English</option>
       <option value="gb">UK English</option>
      </select>

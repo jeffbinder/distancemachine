@@ -6,7 +6,7 @@ function create_x_values()
     }
 }
 
-function update_word_usage_chart(word, region, data)
+function update_word_usage_chart(word, corpus, data)
 {
     var counts = data['counts'],
         periods = data['periods'];
@@ -17,7 +17,7 @@ function update_word_usage_chart(word, region, data)
 
     var max = 0, total = 0;
     for (var x = data_start_year; x <= data_end_year; x++) {
-        var y = (counts[x] || 0) / totals[region][x];
+        var y = (counts[x] || 0) / totals[corpus][x];
         if (y > max) {
             max = y;
         }
@@ -45,7 +45,7 @@ function update_word_usage_chart(word, region, data)
     var line = d3.svg.area()
         .x(function (d) { return x(d); })
         .y0(h - ymargin)
-        .y1(function (d) { return y((counts[d] || 0) / totals[region][d]); })
+        .y1(function (d) { return y((counts[d] || 0) / totals[corpus][d]); })
     
     g.append("svg:path")
         .attr("d", line(x_values));
@@ -191,7 +191,7 @@ function update_word_usage_text(word, data)
     $("#usage-periods-text").html(html.join(''));
 }
 
-function update_word_definitions(word, region, data)
+function update_word_definitions(word, corpus, data)
 {
     var wordnet_definitions = data['wordnet-definitions'],
         html = [];
@@ -224,7 +224,7 @@ function update_word_definitions(word, region, data)
             } else if (syn.indexOf(" ") != -1) {
                 html.push(syn);
             } else {
-                html.push('<a href="javascript:show_word_info(\'' + syn + '\',\'' + region + '\')">');
+                html.push('<a href="javascript:show_word_info(\'' + syn + '\',\'' + corpus + '\')">');
                 html.push(syn);
                 html.push("</a>");
             }
@@ -272,7 +272,7 @@ function update_word_definitions(word, region, data)
 // present one has finished, in which case we must abort.
 window.last_request_id = 0;
 
-function show_word_info(word, region)
+function show_word_info(word, corpus)
 {
     $("#selected-word").text(word);
     $("#word-usage-chart").html("<div id='word-info-loading-message'>Loading...</div>");
@@ -282,11 +282,11 @@ function show_word_info(word, region)
     
     last_request_id += 1;
     var request_id = last_request_id;
-    $.getJSON("wordinfo.php", {"word": word, "region": region}, function(data) {
+    $.getJSON("wordinfo.php", {"word": word, "corpus": corpus}, function(data) {
         if (request_id == last_request_id) {
             update_word_usage_text(word, data);
-            update_word_usage_chart(word, region, data);
-            update_word_definitions(word, region, data);
+            update_word_usage_chart(word, corpus, data);
+            update_word_definitions(word, corpus, data);
         }
     })
     .fail(function () {

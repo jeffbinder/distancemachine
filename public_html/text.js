@@ -257,10 +257,10 @@ $(window).load(function () {
     if (saved) {
         $("#save-link").text("Text saved");
     }
-    $("#corpus-name").text(corpus_names[region]);
+    $("#corpus-name").text(corpus_names[corpus]);
 
     show_print_link_message();
-    $("#print-title").text(title + " (" + corpus_names[region] + ")");
+    $("#print-title").text(title + " (" + corpus_names[corpus] + ")");
 
     window.timer = null;
 
@@ -325,7 +325,7 @@ $(window).load(function () {
     
     $("#text-area").dblclick(function(e) {
         var word = get_selection();
-        show_word_info(word, window.region);
+        show_word_info(word, window.corpus);
     });
     
     $("#highlight-type").change(function (e) {
@@ -335,7 +335,7 @@ $(window).load(function () {
     $("#word-lookup").keyup(function (e) {
         if (e.keyCode == 13) {
             var word = $("#word-lookup").val();
-            show_word_info(word, window.region);
+            show_word_info(word, window.corpus);
         }
     });
 

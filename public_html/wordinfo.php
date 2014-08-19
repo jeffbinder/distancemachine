@@ -5,18 +5,18 @@ include 'application.php';
 header('Content-Type: application/json');
 
 $word = filter_input(INPUT_GET, 'word', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-$region = filter_input(INPUT_GET, 'region', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+$corpus = filter_input(INPUT_GET, 'corpus', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
 
 validate_word($word);
-validate_region($region);
+validate_corpus($corpus);
 
 
 $mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
   or die('Could not connect: ' . $mysqli->connect_error);
 mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
-$counts = get_counts($word, $region);
-$periods = get_usage_periods($word, $region);
+$counts = get_counts($word, $corpus);
+$periods = get_usage_periods($word, $corpus);
 
 mysqli_close($mysqli);
 
