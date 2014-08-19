@@ -23,17 +23,15 @@ for corpus in ('us', 'gb'):
     totals[corpus] = dict(c.fetchall())
 
 # This function computes the usage periods for a given word using the
-# Viterbi algorithm, using the data taken from MySQL.
+# Viterbi algorithm, based on the data taken from MySQL.
 def compute_usage_periods(word, corpus, plot=False):
         
     # Get the usage data from the database.
     c.execute('''
-        SELECT year, sum(ntokens)
+        SELECT year, ntokens
         FROM count
         WHERE word = %s
             AND corpus = %s
-            AND pos = ''
-        GROUP BY year
         ''', (word, corpus))
     counts = dict(c.fetchall())
     years = counts.keys()

@@ -217,7 +217,7 @@ function get_counts($word, $corpus)
     
     $counts = [];
     $query = $mysqli->prepare("SELECT year, ntokens FROM count
-WHERE word = ? AND corpus = ? GROUP BY year");
+WHERE word = ? AND corpus = ?");
     $query->bind_param('ss', $word, $corpus);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($year, $count);
