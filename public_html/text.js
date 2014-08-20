@@ -125,7 +125,7 @@ function animate()
 function update_visibility()
 {
     var h = window.innerHeight,
-        y = document.body.scrollTop;
+        y = (document.documentElement.scrollTop||document.body.scrollTop);
         
     var first_line_visible = Math.floor((y - first_line_top) / line_height) - 1,
         last_line_visible = first_line_visible + Math.ceil(h / line_height) + 1;
