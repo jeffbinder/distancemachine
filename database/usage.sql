@@ -28,7 +28,8 @@ CREATE TABLE total (
 CREATE TABLE usage_periods (
     corpus ENUM('us', 'gb', 'eng', 'fic') NOT NULL,
     word VARCHAR(63) NOT NULL,
-    periods VARCHAR(255) NOT NULL
+    periods VARCHAR(255) NOT NULL,
+    mean_frequency FLOAT NOT NULL,
 ) ENGINE=MyISAM;
 
 CREATE TABLE word_classes (

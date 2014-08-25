@@ -10,6 +10,7 @@ corpora = ('us', 'gb')
 import MySQLdb
 
 start_year = 1750
+end_year = 2009
 
 db = MySQLdb.connect(user='words', db='wordusage')
 c = db.cursor()
@@ -60,7 +61,7 @@ def compute_usage_periods(word, corpus, plot=False):
             if freq > max_frequency:
                 max_frequency = freq
             total_frequency += freq
-    mean_frequency = total_frequency / nyears
+    mean_frequency = total_frequency * 1.0 / (end_year - start_year + 1)
             
     probability_increment = mean_frequency
     transition_cost_coef = 1
@@ -138,7 +139,7 @@ def compute_usage_periods(word, corpus, plot=False):
     # plt.plot(x, y2, '-', linewidth=2)
     # plt.show()
     
-    return ranges
+    return ranges, mean_frequency
     
 
 print 'Computing usage periods...'
@@ -159,13 +160,13 @@ for i, (word,) in enumerate(rows):
         print i, '/', nrows
         db.commit()
     for corpus in corpora:
-        periods = compute_usage_periods(word, corpus)
+        periods, mean = compute_usage_periods(word, corpus)
         periods_string = ';'.join('{0}-{1}'.format(a, b or '') for (a, b) in periods)
         if periods_string:
             c.execute('''
-                INSERT INTO usage_periods (word, corpus, periods)
-                VALUES (%s, %s, %s)
-                ''', (word.lower(), corpus, periods_string))     
+                INSERT INTO usage_periods (word, corpus, periods, mean_frequency)
+                VALUES (%s, %s, %s, %s)
+                ''', (word.lower(), corpus, periods_string, mean))     
 db.commit()
     
 print 'Creating index...'
