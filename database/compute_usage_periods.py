@@ -166,7 +166,7 @@ for i, (word,) in enumerate(rows):
             c.execute('''
                 INSERT INTO usage_periods (word, corpus, periods, mean_frequency)
                 VALUES (%s, %s, %s, %s)
-                ''', (word.lower(), corpus, periods_string, mean))     
+                ''', (word, corpus, periods_string, mean))     
 db.commit()
     
 print 'Creating index...'

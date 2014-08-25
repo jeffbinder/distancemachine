@@ -215,6 +215,7 @@ function get_counts($word, $corpus)
 {
     global $mysqli;
     
+    $word = mb_strtolower($word, "UTF-8");
     $counts = [];
     $query = $mysqli->prepare("SELECT year, ntokens FROM count
 WHERE word = ? AND corpus = ?");

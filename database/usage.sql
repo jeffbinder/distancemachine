@@ -1,7 +1,7 @@
 -- Database containing historical word usage data (like that used by the Google
 -- ngrams viewer).
 
-CREATE DATABASE wordusage CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci';
+CREATE DATABASE wordusage CHARACTER SET 'utf8' COLLATE 'utf8_bin';
 USE wordusage;
 
 CREATE TABLE count (    
@@ -29,7 +29,7 @@ CREATE TABLE usage_periods (
     corpus ENUM('us', 'gb', 'eng', 'fic') NOT NULL,
     word VARCHAR(63) NOT NULL,
     periods VARCHAR(255) NOT NULL,
-    mean_frequency FLOAT NOT NULL,
+    mean_frequency FLOAT NOT NULL
 ) ENGINE=MyISAM;
 
 CREATE TABLE word_classes (

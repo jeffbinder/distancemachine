@@ -49,6 +49,9 @@ CREATE TABLE count_tmp (
         
     # To include parts of speech, replace the egrep command with:
     # sed -E \'s/(.)(_(NOUN|VERB|ADJ|ADV|PRON|DET|ADP|NUM|CONJ|PRT|\\.|X))?\t/\\1\t\\3\t/\'
+    # To preserve capitalization, remove the tr command and load directly into the
+    # count table rather than count_tmp.  You will need to uncomment the nbooks column
+    # in usage.sql.  You can then skip the "Condensing data" step.
     for part in '0 1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o other p punctuation q r s t u v w x y z'.split(' '):
         print 'Loading', corpus, part   
         filename = 'googlebooks-{0}-all-1gram-20120701-{1}.gz'.format(google_corpus_name, part)
@@ -56,7 +59,7 @@ CREATE TABLE count_tmp (
                 + 'chmod 666 /tmp/input.dat; '
                 + 'cat ' + filename + ' | gunzip '
                     + '| egrep -v \'._(NOUN|VERB|ADJ|ADV|PRON|DET|ADP|NUM|CONJ|PRT|\\.|X)\t\' '
-                    + '> /tmp/input.dat &'
+                    + '| tr \'[:upper:]\' \'[:lower:]\' > /tmp/input.dat &'
                 + 'mysql --local_infile=1 -u words -e "LOAD DATA LOCAL INFILE \'/tmp/input.dat\' '
                 + 'INTO TABLE count_tmp FIELDS ESCAPED BY \'\' '
                 + '(word, year, ntokens, nbooks) '
@@ -93,7 +96,7 @@ CREATE TABLE count_tmp (
         pass
     c.execute('''
 INSERT INTO count
-SELECT corpus, lower(word), year, sum(ntokens)
+SELECT corpus, word, year, sum(ntokens)
 FROM count_tmp
 FORCE INDEX FOR GROUP BY (idx_count_word_tmp)
 GROUP BY corpus, word, year
