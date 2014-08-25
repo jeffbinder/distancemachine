@@ -1,7 +1,7 @@
 -- Database containing historical word usage data (like that used by the Google
 -- ngrams viewer).
 
-CREATE DATABASE wordusage;
+CREATE DATABASE wordusage CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci';
 USE wordusage;
 
 CREATE TABLE count (    
@@ -10,7 +10,7 @@ CREATE TABLE count (
     word VARCHAR(63) NOT NULL,
     --pos VARCHAR(15) NOT NULL,
     year SMALLINT NOT NULL,
-    ntokens BIGINT NOT NULL--,
+    ntokens INT UNSIGNED NOT NULL--,
     --nbooks MEDIUMINT NOT NULL
 ) ENGINE=MyISAM;
 

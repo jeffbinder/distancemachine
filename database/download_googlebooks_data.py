@@ -22,4 +22,4 @@ for corpus in corpora:
     print 'Downloading', corpus, 'totals'
     filename = 'googlebooks-{0}-all-totalcounts-20120701.txt'.format(google_corpus_name)
     url = 'http://storage.googleapis.com/books/ngrams/books/' + filename
-    os.system('curl ' + url + ' >totals-' + corpus + '.txt')
+    os.system('curl ' + url + ' >' + filename)
