@@ -2,14 +2,14 @@
 #   http://storage.googleapis.com/books/ngrams/books/datasetsv2.html
 # into a MySQL database.  You will need to create the database using the the schema in
 # usage.sql and insert the appropriate credentials into the "MySQLdb.connect" line of this
-# script.  The script will automatically download and install the 2012 version
-# of the data.
+# script.  The script is designed to work with the 2012 version of the data, which you
+# can download with the download_googlebooks_data.py script.
 #
 # This version only loads 1grams, and it removes part of speech tags, book counts, and
 # the distinctions between different capitalizations of words.
 #
-# A database I created for the American and British 1grams takes up about 37GB total.
-# On my system (a 2012 MacBook Pro) this script took about 4 hours to run.  You will
+# A database I created for the American and British 1grams takes up about 16GB total.
+# On my system (a 2012 Mac Pro) this script took about 18 hours to run.  You will
 # required about 100GB of additional disk space to consolidate the data.
 
 corpora = ('us', 'gb')
