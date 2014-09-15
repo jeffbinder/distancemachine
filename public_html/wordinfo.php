@@ -13,6 +13,7 @@ validate_corpus($corpus);
 
 $mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
   or die('Could not connect: ' . $mysqli->connect_error);
+mysqli_set_charset($mysqli, 'utf8');
 mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
 $counts = get_counts($word, $corpus);
@@ -23,6 +24,7 @@ mysqli_close($mysqli);
 
 $mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
   or die('Could not connect: ' . $mysqli->connect_error);
+mysqli_set_charset($mysqli, 'utf8');
 mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
 
 $wordnet_definitions = get_wordnet_definitions($word);
