@@ -12,6 +12,7 @@
 #definition-area {
     max-height: 250px;
     overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 #definitions div {

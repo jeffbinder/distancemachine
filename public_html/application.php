@@ -810,7 +810,7 @@ function get_dict_definitions($word)
 
     // Lemmatize and discard the POS info.
     $word = strtolower($word);
-    $lemmas = lemmatize($word, false);
+    $lemmas = lemmatize($word, true);
     $lemmas2 = [];
     foreach ($lemmas as $lemma) {
         $lemmas2[] = $lemma[0];
