@@ -336,7 +336,7 @@ WHERE word = ? AND corpus = ?");
 
 // Generates the main content of an annotated text, saving it to
 // the tmpdir and updating the database accordingly.
-function gen_annotated_text($id, $text, $title, $corpus)
+function gen_annotated_text($id, $text, $title, $corpus, $offline)
 {
   global $max_linelen;
   
@@ -374,13 +374,15 @@ function gen_annotated_text($id, $text, $title, $corpus)
     if ($newprogress > $progress) {
         $progress = $newprogress;
         
-        // The point of this is to ensure that the server will notice and shut this
-        // script down if no one's listening anymore.
-        echo ' ';
-        flush();
-        ob_flush();
-        if (connection_aborted() || task_status($id) == 'killed') {
-            die();
+        if (!$offline) {
+            // The point of this is to ensure that the server will notice and shut this
+            // script down if no one's listening anymore.
+            echo ' ';
+            flush();
+            ob_flush();
+            if (connection_aborted() || task_status($id) == 'killed') {
+                die();
+            }
         }
         
         // Save the task data so that the page can update the progress bar.
@@ -495,6 +497,18 @@ function gen_annotated_text($id, $text, $title, $corpus)
   $running = false;
 }
 
+// Strips out all the annotations/HTML character refs added by the above.
+function strip_annotations($content)
+{
+  $text = str_replace("<div class='line'>&nbsp;</div>", "", $content);
+  $text = str_replace("&nbsp;", " ", $text);
+  $text = str_replace("&#8203;", "", $text);
+  $text = strip_tags($text);
+  $text = htmlspecialchars_decode($text, ENT_QUOTES);
+  
+  return $text;
+}
+
 function acquire_storage_lock()
 {
   global $lockfile;
@@ -545,11 +559,8 @@ function get_tmp_filename_from_id($id)
   return $tmpdir . $id;
 }
 
-// Save a text to the tmpdir so that it can be accessed later.
-function save_text_to_tmp_file($id, $content, $title, $corpus)
+function write_text_to_file($filename, $content, $title, $corpus)
 {
-  $filename = get_tmp_filename_from_id($id);
-
   $data = ["content" => $content, "title" => $title, "corpus" => $corpus];
   $data = json_encode($data);
   $data = gzcompress($data);
@@ -557,6 +568,14 @@ function save_text_to_tmp_file($id, $content, $title, $corpus)
   $handle = acquire_storage_lock();
   file_put_contents($filename, $data) or die('Save text failed.');
   release_storage_lock($handle);
+}
+
+// Save a text to the tmpdir so that it can be accessed later.
+function save_text_to_tmp_file($id, $content, $title, $corpus)
+{
+  $filename = get_tmp_filename_from_id($id);
+
+  write_text_to_file($filename, $content, $title, $corpus);
 
   return $id;
 }
