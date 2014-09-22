@@ -19,10 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     } else {
         $initial_year = (int)$initial_year;
     }
+    $initial_dict = filter_input(INPUT_GET, 'd', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
 }
 
 validate_id($id);
 validate_year($initial_year);
+validate_dict($initial_dict);
 
 $saved = is_text_saved($id);
 if ($saved) {
@@ -69,6 +71,7 @@ $content = $data['content'];
 
 echo "id = " . json_encode($id) . ";\n";
 echo "initial_year = " . json_encode($initial_year) . ";\n";
+echo "initial_dict = " . json_encode($initial_dict) . ";\n";
 echo "corpus = " . json_encode($corpus) . ";\n";
 echo "title = " . json_encode($title) . ";\n";
 echo "saved = " . json_encode($saved) . ";\n";
@@ -86,12 +89,17 @@ echo "totals = " . json_encode($totals) . ";\n";
   </div>
   <div id="header">
    <div id="option-area" style="float:left">
-    <div>Slide to change the year &ndash; double-click words to see details</div>
     <div>
+     <select id="highlight-option">
+       <option value="ngrams">Highlighting words that are uncommon in the selected year</option>
+      </select>
+    </div>
+    <div>
+     <div id="selected-year-area" style="float:right"><span class="selected-year"></span></div>
      <div id="slider" style="float:right"></div>
      <div style="float:right"><button id="play-button"></button></div>
     </div>
-    <div>Highlighting words uncommon in: <span class="selected-year"></span></div>
+    <div style="clear:both">Select an option above &ndash; double-click words to see details</div>
    </div>
    <div id="option-area-right" style="float:right">
     <div style="float:right;margin-right:19px;margin-top:2px;margin-bottom:3px">
@@ -147,16 +155,19 @@ echo "totals = " . json_encode($totals) . ";\n";
   </div>
   <div id="help-box">
     <div><b>Help</b></div>
-    <div id="key" style="clear:both">
+    <div class="key" id="ngrams-key" style="clear:both">
      <div><span class="old-word">blue</span> words are more common earlier</div>
      <div><span class="new-word">red</span> words are more common later</div>
      <div><span class="lapsed-word">yellow</span> words are more common both earlier and later</div>
+    </div>
+    <div class="key" id="dict-key" style="clear:both">
+     <div><span class="omitted-word">red</span> words are omitted from the selected dictionary</div>
     </div>
     <div>
      This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that uses historical data from Google books to identify words that were uncommon at a given point in time.
     </div>
     <div>
-     Use the slider on the top to see what words were uncommon in different years, or click the play button to animate.  You can also double-click on words in the text to see details.
+     Use the controls at the top left to see what words were uncommon in different years or to find words in the text that were omitted from a given dictionary.  When highlighting words by year, you can also click the play button to animate.  Double-click on words in the text to see details, including the full historical usage data and dictionary entries.
     </div>
     <div>
      <a href="/about" target="_blank">About this program</a>

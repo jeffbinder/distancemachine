@@ -19,7 +19,9 @@ validate_text($text);
 validate_title($title);
 validate_corpus($corpus);
 
-gen_annotated_text($id, $text, $title, $corpus);
+set_time_limit(300);
+
+gen_annotated_text($id, $text, $title, $corpus, false);
 
 mysqli_close($mysqli);
 

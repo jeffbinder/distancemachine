@@ -29,7 +29,7 @@
 
 #option-area {
     margin-left: 8px;
-    margin-top: 8px;
+    margin-top: 4px;
     text-align: center;
 }
 
@@ -45,6 +45,12 @@
 }
 
 #slider .ui-slider-handle {
+}
+
+#selected-year-area {
+    position: relative;
+    top: 9px;
+    left: 2px;
 }
 
 .selected-year {
@@ -181,14 +187,14 @@
     margin-top: 0;
 }
 
-#key {
+.key {
     margin-right: 14px;
     padding: 5px;
     background-color: white;
     border: 1px solid #e0cfc2;
 }
 
-#key div {
+.key div {
     margin-top: 0;
 }
 

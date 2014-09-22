@@ -1,11 +1,12 @@
-# Creates a cache of the usage periods for the n most commonly used words.
+<?php
 
-import json
-import MySQLdb
+// Creates a cache of the usage periods and dicts for the n most commonly used words.
 
-# 500 most common words in Project Gutenberg
-words = ('''
-the of and to in i that was his he it with is for as had you not be her on at
+set_include_path('../public_html/');
+include 'application.php';
+
+// 500 most common words in Project Gutenberg
+$words = "the of and to in i that was his he it with is for as had you not be her on at
 by which have or from this him but all she they were my are me one their so an
 said them we who would been will no when there if more out up into do any your
 what has man could other than our some very time upon about may its only now
@@ -41,27 +42,43 @@ character sort sight ten show party fine ye ready story common book electronic
 talk account mark interest written can't bed necessary age else force idea
 longer art spoke across brother early ought sometimes line saying table
 appeared river continued eye ety sun information later everything reached
-suddenly past hours strange deep change miles feeling act meet paid
-    ''').replace('\n', ' ').split(' ')
-       
+suddenly past hours strange deep change miles feeling act meet paid";
+$words = str_replace("\n", " ", $words);
+$words = explode(" ", $words);
 
-db = MySQLdb.connect(user='words', db='wordusage')
-c = db.cursor()
+$mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
+  or die('Could not connect: ' . $mysqli->connection_error);
+mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
-f = open('CACHE', 'w')
+$ngrams_data = array();
+$dict_data = array();
+foreach ($corpora as $corpus) {
+  $ngrams_data[$corpus] = array();
+}
 
-data = {'us': {}, 'gb': {}}
-for word in words:
-    word = word.lower()
-    for corpus in ['us', 'gb']:
-        c.execute("SELECT classes FROM word_classes WHERE word = %s AND corpus = %s",
-                  (word, corpus))
-        row = c.fetchone()
-        if row:
-            classes, = row
-        else:
-            classes = ""
-        data[corpus][word] = classes
+$query = $mysqli->prepare("SELECT classes FROM word_classes WHERE word = ? AND corpus = ?");
+$query->bind_param('ss', $word, $corpus);
+$query->bind_result($classes);
+foreach ($words as $word) {
+  foreach ($corpora as $corpus) {
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    if (!$query->fetch()) {
+        $classes = "";
+    }
+    $ngrams_data[$corpus][$word] = $classes;
+  }
+}
 
-f.write(json.dumps(data))
-f.close()
+$cache_data = array();
+foreach ($words as $word) {
+  $in_dicts = get_dicts_for_word($word);
+  $dict_data[$word] = $in_dicts;
+}
+
+mysqli_close($mysqli);
+
+$data = ["ngrams" => $ngrams_data, "dict" => $dict_data];
+$data = json_encode($data);
+file_put_contents("CACHE", $data)
+
+?>

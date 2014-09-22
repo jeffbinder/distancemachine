@@ -55,6 +55,21 @@ function validate_classes($classes)
     }
 }
 
+function validate_dict($dict)
+{
+    global $dicts;
+    if (!(is_null($dict) || (is_string($dict) && in_array($dict, $dicts, true)))) {
+        die("Invalid dictionary!");
+    }
+}
+
+function validate_dicts($dicts)
+{
+    if (!(is_string($dicts))) {
+        die("Invalid dictionary list!");
+    }
+}
+
 function create_task_entry($id)
 {
     global $mysqli;
@@ -285,8 +300,8 @@ function load_cache()
 function get_classes_from_cache($word, $corpus)
 {
     global $cache_data;
-    if (array_key_exists($word, $cache_data[$corpus])) {
-        return $cache_data[$corpus][$word];
+    if (array_key_exists($word, $cache_data["ngrams"][$corpus])) {
+        return $cache_data["ngrams"][$corpus][$word];
     }
     return NULL;
 }
@@ -294,18 +309,23 @@ function get_classes_from_cache($word, $corpus)
 function add_classes_to_cache($word, $corpus, $classes)
 {
     global $cache_data;
-    $cache_data[$corpus][$word] = $classes;
+    $cache_data["ngrams"][$corpus][$word] = $classes;
+}
+
+function get_dicts_from_cache($word)
+{
+    global $cache_data;
+    if (array_key_exists($word, $cache_data["dict"])) {
+      return $cache_data["dict"][$word];
+    }
+    return NULL;
 }
 
 // Gets the usage period classes that will be applied to a given token.
 function get_classes_for_word($word)
 {
     global $mysqli;
-    
-    global $start_year;
-    global $end_year;
     global $corpus;
-
     global $cache_hits;
 
     $word = strtolower($word);
@@ -332,6 +352,51 @@ WHERE word = ? AND corpus = ?");
     //add_classes_to_cache($word, $corpus, $classes);
 
     return $classes;
+}
+
+// Gets a list of dictionaries that contain a given word.
+function get_dicts_for_word($word)
+{
+    global $mysqli;
+    global $main_db_name;
+    global $wordnet_db_name;
+    global $dict_db_name;
+    global $dicts;
+
+    if (!is_null($in_dicts = get_dicts_from_cache($word))) {
+        return $in_dicts;
+    }
+
+    mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
+
+    $lemmas = lemmatize(strtolower($word), false);
+    
+    mysqli_select_db($mysqli, $dict_db_name) or die('Could not select database');
+
+    $in_dicts = [];
+    $query = $mysqli->prepare("SELECT SQL_CACHE dict FROM dict
+WHERE headword = ? AND dict = ?");
+    foreach ($lemmas as $lemma) {
+        $headword = $lemma[0];
+	$query->bind_param('ss', $headword, $dict);
+	foreach ($dicts as $dict) {
+	    $query->execute() or die('Query failed: ' . $mysqli->error);
+	    $query->store_result();
+	    if ($query->num_rows > 0) {
+	        if (!in_array($dict, $in_dicts)) {
+	            $in_dicts[] = $dict;
+	        }
+	    }
+	    $query->free_result();
+	}
+    }
+    $in_dicts = implode("", $in_dicts);
+    
+    validate_dicts($in_dicts);
+
+    mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
+
+    return $in_dicts;
 }
 
 // Generates the main content of an annotated text, saving it to
@@ -429,8 +494,10 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
         // If the RE matches, the next thing in the string is a "real word."
         $word = $matches[0][0];
         $classes = get_classes_for_word($word);
-        if ($classes != "") {
-          $content .= sprintf("<span data-usage='%s'>%s</span>", $classes,
+	$dicts = get_dicts_for_word($word);
+        if ($classes != "" || $dicts != "") {
+          $content .= sprintf("<span data-usage='%s' data-dicts='%s'>%s</span>",
+			      $classes, $dicts,
                               htmlspecialchars($word, ENT_QUOTES));
           $nannotations += 1;
         } else {

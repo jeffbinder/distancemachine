@@ -34,49 +34,72 @@ function update_highlighting(refresh, whole_document)
         }
     }
 
-    // Construct a regex to match words that are out of use in the selected year.
-    var dec = ~~(year / 10);
-    var cent = ~~(year / 100);
-    var re = "[oln]" + cent + "(xx|" + (dec - cent * 10) + "(" + (year - dec * 10) + "|x";
-    if (year < dec * 10 + 5) {
-        re += "|l)";
-    } else {
-        re += "|r)";
-    }
-    if (year < cent * 100 + 50) {
-        re += "|lx)";
-    } else {
-        re += "|rx)";
-    }
-    re = new RegExp(re);
-    
-    for (var i = start; i <= end; i++) {
-        var line = lines[i];
-        var children = line.getElementsByTagName("span");
-        var nchildren = children.length;
-        for (var j = 0; j < nchildren; j++) {
-            var child = children[j];
-            var usage = child.getAttribute("data-usage");
-    
-            if (usage) {
-                var matches = usage.match(re);
-                if (matches) {
-                    if (matches[0][0] == "o") {
-                        child.className = "old-word";
-                        continue;
+    if (window.highlight_option == "ngrams") {
+	// Construct a regex to match words that are out of use in the selected year.
+	var dec = ~~(year / 10);
+	var cent = ~~(year / 100);
+	var re = "[oln]" + cent + "(xx|" + (dec - cent * 10) + "(" + (year - dec * 10) + "|x";
+	if (year < dec * 10 + 5) {
+            re += "|l)";
+	} else {
+            re += "|r)";
+	}
+	if (year < cent * 100 + 50) {
+            re += "|lx)";
+	} else {
+            re += "|rx)";
+	}
+	re = new RegExp(re);
+	
+	for (var i = start; i <= end; i++) {
+            var line = lines[i];
+            var children = line.getElementsByTagName("span");
+            var nchildren = children.length;
+            for (var j = 0; j < nchildren; j++) {
+		var child = children[j];
+		var usage = child.getAttribute("data-usage");
+		
+		if (usage) {
+                    var matches = usage.match(re);
+                    if (matches) {
+			if (matches[0][0] == "o") {
+                            child.className = "old-word";
+                            continue;
+			}
+			if (matches[0][0] == "l") {
+                            child.className = "lapsed-word";
+                            continue;
+			}
+			if (matches[0][0] == "n") {
+                            child.className = "new-word";
+                            continue;
+			}
                     }
-                    if (matches[0][0] == "l") {
-                        child.className = "lapsed-word";
-                        continue;
-                    }
-                    if (matches[0][0] == "n") {
-                        child.className = "new-word";
-                        continue;
-                    }
-                }
+		}
                 child.className = "";
             }
-        }
+	}
+
+    } else if (window.highlight_option.indexOf("dict-") == 0) {
+
+	var dict = window.highlight_option.substring(5);
+	for (var i = start; i <= end; i++) {
+            var line = lines[i];
+            var children = line.getElementsByTagName("span");
+            var nchildren = children.length;
+            for (var j = 0; j < nchildren; j++) {
+		var child = children[j];
+		var dicts = child.getAttribute("data-dicts");
+		
+		if (dicts) {
+                    if (dicts.indexOf(dict) == -1) {
+                        child.className = "omitted-word";
+                        continue;
+		    }
+		}
+                child.className = "";
+            }
+	}
     }
 }
 
@@ -90,6 +113,27 @@ function update_highlight_type()
         $("head").append('<link id="highlight-css-link" rel="stylesheet" type="text/css" href="highlight-bg.css">');
     } else if (highlight_type == "box") {
         $("head").append('<link id="highlight-css-link" rel="stylesheet" type="text/css" href="highlight-box.css">');
+    }
+}
+
+function update_highlight_option()
+{
+    window.highlight_option = $("#highlight-option").val();
+    if (!window.highlight_option) {
+	window.highlight_option = "ngrams";
+    }
+    if (window.highlight_option == "ngrams") {
+	$("#ngrams-key").css("display", "default");
+	$("#dict-key").css("display", "none");
+	$("#play-button").button("enable");
+	$("#slider").slider("enable");
+	$(".selected-year").css("color", "black");
+    } else if (window.highlight_option.indexOf("dict-") == 0) {
+	$("#ngrams-key").css("display", "none");
+	$("#dict-key").css("display", "default");
+	$("#play-button").button("disable");
+	$("#slider").slider("disable");
+	$(".selected-year").css("color", "grey");
     }
 }
 
@@ -166,7 +210,11 @@ function get_selection()
 
 function get_base_url()
 {
-    return "/text/" + id + "?y=" + current_year;
+    var highlight_option_str = "";
+    if (window.highlight_option.indexOf("dict-") == 0) {
+	highlight_option_str = "&d=" + window.highlight_option.substring(5);
+    }
+    return "/text/" + id + "?y=" + current_year + highlight_option_str;
 }
 
 function get_url()
@@ -275,6 +323,40 @@ $(window).load(function () {
         window.line_height = 10;
     }
     
+    $("#slider").slider({
+        value: end_year,
+        min: start_year,
+        max: end_year,
+        slide: function(event, ui) {
+            set_year(parseInt(ui.value));
+        },
+        stop: function(event, ui) {
+            update_location();
+        }
+    });
+    
+    $("#play-button").button({
+        icons: {
+            primary: "ui-icon-play"
+        },
+        text: false
+    })
+    .click(function (e) {
+        animate();
+    });
+    
+    for (var i in dicts) {
+	$('#highlight-option')
+            .append($("<option></option>")
+		    .attr("value", "dict-" + dicts[i])
+		    .text("Highlighting words that are not in " + dict_names[dicts[i]][0])); 
+	dict_names[i];
+    }
+    if (initial_dict) {
+	$("#highlight-option").val("dict-" + initial_dict);
+    }
+    update_highlight_option();
+
     window.highlight_type = $.cookie("highlight-type");
     if (window.highlight_type) {
         $("#highlight-type").val(window.highlight_type);
@@ -300,32 +382,17 @@ $(window).load(function () {
         update_word_info_height();
     };
     
-    $("#slider").slider({
-        value: end_year,
-        min: start_year,
-        max: end_year,
-        slide: function(event, ui) {
-            set_year(parseInt(ui.value));
-        },
-        stop: function(event, ui) {
-            update_location();
-        }
-    });
-    set_year(initial_year);
-    
-    $("#play-button").button({
-        icons: {
-            primary: "ui-icon-play"
-        },
-        text: false
-    })
-    .click(function (e) {
-        animate();
-    });
-    
     $("#text-area").dblclick(function(e) {
         var word = get_selection();
         show_word_info(word, window.corpus);
+    });
+
+    set_year(initial_year);
+    
+    $("#highlight-option").change(function (e) {
+        update_highlight_option();
+        update_location();
+	update_highlighting(true);
     });
     
     $("#highlight-type").change(function (e) {
