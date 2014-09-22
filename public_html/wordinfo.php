@@ -4,7 +4,7 @@ include 'application.php';
 
 header('Content-Type: application/json');
 
-$word = filter_input(INPUT_GET, 'word', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+$word = filter_input(INPUT_GET, 'word', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_NO_ENCODE_QUOTES);
 $corpus = filter_input(INPUT_GET, 'corpus', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
 
 validate_word($word);
