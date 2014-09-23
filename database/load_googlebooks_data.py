@@ -21,7 +21,7 @@ import re
 
 import MySQLdb
 
-db = MySQLdb.connect(user='words', db='wordusage')
+db = MySQLdb.connect(user='words', db='wordusage', charset='utf8')
 c = db.cursor()
 
 for corpus in corpora:

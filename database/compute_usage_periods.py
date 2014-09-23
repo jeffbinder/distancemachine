@@ -12,7 +12,7 @@ import MySQLdb
 start_year = 1750
 end_year = 2009
 
-db = MySQLdb.connect(user='words', db='wordusage')
+db = MySQLdb.connect(user='words', db='wordusage', charset='utf8')
 c = db.cursor()
 
 # Get the total usage data from the database.
@@ -39,7 +39,7 @@ def compute_usage_periods(word, corpus, plot=False):
     counts = dict(c.fetchall())
     years = counts.keys()
     if not years:
-        return []
+        return [], 0.0
     
     min_year = min(years)
     if min_year < start_year:
@@ -47,7 +47,7 @@ def compute_usage_periods(word, corpus, plot=False):
     max_year = max(years)
     nyears = max_year - min_year + 1
     if nyears <= 0:
-        return []
+        return [], 0.0
     
     corpus_totals = totals[corpus]
 
@@ -150,16 +150,25 @@ except:
     pass
 
 c.execute('''
+    SELECT DISTINCT corpus, word
+    FROM usage_periods
+    ''')
+rows = c.fetchall()
+words_done = set([(x, y) for x, y in rows])
+
+c.execute('''
     SELECT DISTINCT word
     FROM count
     ''')
 rows = c.fetchall()
 nrows = len(rows)
 for i, (word,) in enumerate(rows):
-    if i % 100 == 0:
+    if i % 10000 == 0:
         print i, '/', nrows
         db.commit()
     for corpus in corpora:
+        if (corpus, word) in words_done:
+            continue
         periods, mean = compute_usage_periods(word, corpus)
         periods_string = ';'.join('{0}-{1}'.format(a, b or '') for (a, b) in periods)
         if periods_string:

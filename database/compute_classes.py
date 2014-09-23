@@ -3,7 +3,7 @@ import MySQLdb
 start_year = 1800
 end_year = 2020
 
-db = MySQLdb.connect(user='words', db='wordusage')
+db = MySQLdb.connect(user='words', db='wordusage', charset='utf8')
 c = db.cursor()
 
 def get_usage_periods(word, corpus):
@@ -25,7 +25,7 @@ def get_usage_periods(word, corpus):
         period_list = []
     
     return period_list
-                                    
+
 def classes_for_period(y1, y2, prefix):
     if y1 < start_year:
         y1 = start_year
@@ -85,6 +85,13 @@ except:
     pass
 
 c.execute('''
+    SELECT DISTINCT corpus, word
+    FROM word_classes
+    ''')
+rows = c.fetchall()
+words_done = set([(x, y) for x, y in rows])
+
+c.execute('''
     SELECT word, corpus
     FROM usage_periods
     ''')
@@ -94,12 +101,14 @@ for i, (word, corpus) in enumerate(rows):
     if i % 10000 == 0:
         print i, '/', nrows
         db.commit()
+    if (corpus, word) in words_done:
+        continue
     classes = classes_for_word(word, corpus)
     if classes:
         c.execute('''
             INSERT INTO word_classes (word, corpus, classes)
             VALUES (%s, %s, %s)
-            ''', (word.lower(), corpus, classes))     
+            ''', (word, corpus, classes))
 db.commit()
     
 print 'Creating index...'
