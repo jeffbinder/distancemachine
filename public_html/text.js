@@ -92,7 +92,7 @@ function update_highlighting(refresh, whole_document)
 		var dicts = child.getAttribute("data-dicts");
 		
 		if (dicts) {
-                    if (dicts.indexOf(dict) == -1) {
+                    if (dicts.indexOf(dict) > -1) {
                         child.className = "omitted-word";
                         continue;
 		    }

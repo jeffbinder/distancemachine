@@ -11,6 +11,7 @@ mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
     $initial_year = $end_year;
+    $initial_dict = null;
 } else {
     $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
     $initial_year = filter_input(INPUT_GET, 'y', FILTER_SANITIZE_NUMBER_INT);

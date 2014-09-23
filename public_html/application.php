@@ -363,8 +363,8 @@ function get_dicts_for_word($word)
     global $dict_db_name;
     global $dicts;
 
-    if (!is_null($in_dicts = get_dicts_from_cache($word))) {
-        return $in_dicts;
+    if (!is_null($omitted_dicts = get_dicts_from_cache($word))) {
+        return $omitted_dicts;
     }
 
     mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
@@ -390,13 +390,20 @@ WHERE headword = ? AND dict = ?");
 	    $query->free_result();
 	}
     }
-    $in_dicts = implode("", $in_dicts);
     
-    validate_dicts($in_dicts);
+    $omitted_dicts = [];
+	foreach ($dicts as $dict) {
+	    if (!in_array($dict, $in_dicts)) {
+	        $omitted_dicts[] = $dict;
+	    }
+	}
+    $omitted_dicts = implode("", $omitted_dicts);
+    
+    validate_dicts($omitted_dicts);
 
     mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
-    return $in_dicts;
+    return $omitted_dicts;
 }
 
 // Generates the main content of an annotated text, saving it to
@@ -494,7 +501,7 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
         // If the RE matches, the next thing in the string is a "real word."
         $word = $matches[0][0];
         $classes = get_classes_for_word($word);
-	$dicts = get_dicts_for_word($word);
+        $dicts = get_dicts_for_word($word);
         if ($classes != "" || $dicts != "") {
           $content .= sprintf("<span data-usage='%s' data-dicts='%s'>%s</span>",
 			      $classes, $dicts,

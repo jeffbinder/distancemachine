@@ -69,10 +69,10 @@ foreach ($words as $word) {
   }
 }
 
-$cache_data = array();
+$cache_data = array("dict" => array());
 foreach ($words as $word) {
-  $in_dicts = get_dicts_for_word($word);
-  $dict_data[$word] = $in_dicts;
+  $omitted_dicts = get_dicts_for_word($word);
+  $dict_data[$word] = $omitted_dicts;
 }
 
 mysqli_close($mysqli);
