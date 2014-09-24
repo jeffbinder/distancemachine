@@ -382,9 +382,22 @@ $(window).load(function () {
         update_word_info_height();
     };
     
-    $("#text-area").dblclick(function(e) {
+    $("#text-area").dblclick(function (e) {
         var word = get_selection();
         show_word_info(word, window.corpus);
+    });
+    $("#text-area span").on("touchstart", function (e) {
+        window.touching_word = true;
+    });
+    $("#text-area span").on("touchmove", function (e) {
+        window.touching_word = false;
+    });
+    $("#text-area span").on("touchend", function (e) {
+        if (window.touching_word) {
+            var word = e.target.textContent;
+            show_word_info(word, window.corpus);
+            return false;
+        }
     });
 
     set_year(initial_year);
