@@ -908,6 +908,7 @@ function get_dict_definitions($word)
     foreach ($lemmas as $lemma) {
         $lemmas2[] = $lemma[0];
     }
+    $lemmas2 = array_unique($lemmas2);
     
     mysqli_select_db($mysqli, $dict_db_name) or die('Could not select database');
     
@@ -916,8 +917,7 @@ function get_dict_definitions($word)
     foreach ($dicts as $dict) {
         $deflist = [];
     
-        foreach ($lemmas2 as $pair) {
-            $lemma = $pair;
+        foreach ($lemmas2 as $lemma) {
             $query = $mysqli->prepare("
 SELECT entry
 FROM dict
