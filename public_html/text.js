@@ -388,7 +388,7 @@ $(window).load(function () {
         update_word_info_height();
     };
     
-    $("#text-area").dblclick(function (e) {
+    $("#text-area,#definition-area").dblclick(function (e) {
         var word = get_selection();
         show_word_info(word, window.corpus);
     });
