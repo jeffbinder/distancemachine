@@ -604,6 +604,9 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
       $content .= "</div>\n<div class='line'>";
       $linelen = 0;
       $nlines += 1;
+    } else if ($delim == "-" && $linelen == $max_linelen) {
+      // Hyphens at the end of a line are free.
+      $content .= htmlspecialchars($delim, ENT_QUOTES);
     } else {
       $content .= htmlspecialchars($delim, ENT_QUOTES);
       $linelen += 1;
@@ -626,11 +629,11 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
 // Strips out all the annotations/HTML character refs added by the above.
 function strip_annotations($content)
 {
-  $text = str_replace("<div class='line'>&nbsp;</div>\n", "", $content);
   $text = str_replace("<div class='line'>&nbsp;</div>", "", $content);
   $text = str_replace("&nbsp;", " ", $text);
   $text = str_replace("&#8203;", "", $text);
   $text = strip_tags($text);
+  $text = str_replace(" \n", "\n", $text);
   $text = htmlspecialchars_decode($text, ENT_QUOTES);
   
   return $text;
