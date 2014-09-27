@@ -11,6 +11,12 @@
     .omitted-word {
         background-color: pink;
     }
+    .obsolete-word {
+        background-color: lightBlue;
+    }
+    .vulgar-word {
+        background-color: #F0E68C;
+    }
 }
 
 @media print {
@@ -28,6 +34,14 @@
     }
     .omitted-word {
         border:2px solid pink;
+        margin: -2px;
+    }
+    .obsolete-word {
+        border:2px solid lightBlue;
+        margin: -2px;
+    }
+    .vulgar-word {
+        border:2px solid #F0E68C;
         margin: -2px;
     }
 }

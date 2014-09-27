@@ -62,5 +62,14 @@ CREATE TABLE dict (
   id INT(11) DEFAULT NULL,
   headword VARCHAR(255) NOT NULL,
   entry TEXT COLLATE 'utf8_bin',
+  pos VARCHAR(7),
   PRIMARY KEY (dict, headword)
+);
+
+CREATE TABLE dict_usage_notes (
+  dict VARCHAR(15) NOT NULL,
+  headword VARCHAR(255) NOT NULL,
+  note_class ENUM('v', 'o') NOT NULL, 
+  note VARCHAR(63) NOT NULL,
+  KEY (headword)
 );

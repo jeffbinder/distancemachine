@@ -11,7 +11,7 @@ mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
     $initial_year = $end_year;
-    $initial_dict = null;
+    $initial_highlight_option = null;
 } else {
     $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
     $initial_year = filter_input(INPUT_GET, 'y', FILTER_SANITIZE_NUMBER_INT);
@@ -20,12 +20,16 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     } else {
         $initial_year = (int)$initial_year;
     }
+    $initial_highlight_option = null;
     $initial_dict = filter_input(INPUT_GET, 'd', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+    if ($initial_dict) {
+        validate_dict($initial_dict);
+        $initial_highlight_option = 'dict-' . $initial_dict;
+    }
 }
 
 validate_id($id);
 validate_year($initial_year);
-validate_dict($initial_dict);
 
 $saved = is_text_saved($id);
 if ($saved) {
@@ -72,7 +76,7 @@ $content = $data['content'];
 
 echo "id = " . json_encode($id) . ";\n";
 echo "initial_year = " . json_encode($initial_year) . ";\n";
-echo "initial_dict = " . json_encode($initial_dict) . ";\n";
+echo "initial_highlight_option = " . json_encode($initial_highlight_option) . ";\n";
 echo "corpus = " . json_encode($corpus) . ";\n";
 echo "title = " . json_encode($title) . ";\n";
 echo "saved = " . json_encode($saved) . ";\n";
@@ -163,6 +167,8 @@ echo "totals = " . json_encode($totals) . ";\n";
     </div>
     <div class="key" id="dict-key" style="clear:both">
      <div><span class="omitted-word">red</span> words are omitted from the selected dictionary</div>
+     <div><span class="obsolete-word">blue</span> words are marked as rare or obsolete</div>
+     <div><span class="vulgar-word">yellow</span> words are marked as vulgar, provincial, or improper</div>
     </div>
     <div>
      This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that uses historical data from Google books to identify words that were uncommon at a given point in time.

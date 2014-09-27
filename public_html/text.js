@@ -81,8 +81,8 @@ function update_highlighting(refresh, whole_document)
 	}
 
     } else if (window.highlight_option.indexOf("dict-") == 0) {
-
-	var dict = window.highlight_option.substring(5);
+        
+        var dict = window.highlight_option.substring(5);
 	for (var i = start; i <= end; i++) {
             var line = lines[i];
             var children = line.getElementsByTagName("span");
@@ -92,8 +92,14 @@ function update_highlighting(refresh, whole_document)
 		var dicts = child.getAttribute("data-dicts");
 		
 		if (dicts) {
-                    if (dicts.indexOf(dict) > -1) {
+                    if (dicts.indexOf("x" + dict) > -1) {
                         child.className = "omitted-word";
+                        continue;
+		    } else if (dicts.indexOf("o" + dict) > -1) {
+                        child.className = "obsolete-word";
+                        continue;
+		    } else if (dicts.indexOf("v" + dict) > -1) {
+                        child.className = "vulgar-word";
                         continue;
 		    }
 		}
@@ -128,7 +134,7 @@ function update_highlight_option()
 	$("#play-button").button("enable");
 	$("#slider").slider("enable");
 	$(".selected-year").css("color", "black");
-    } else if (window.highlight_option.indexOf("dict-") == 0) {
+    } else {
 	$("#ngrams-key").css("display", "none");
 	$("#dict-key").css("display", "default");
 	$("#play-button").button("disable");
@@ -349,11 +355,11 @@ $(window).load(function () {
 	$('#highlight-option')
             .append($("<option></option>")
 		    .attr("value", "dict-" + dicts[i])
-		    .text("Highlighting words that are not in " + dict_names[dicts[i]][0])); 
+		    .text("Highlighting words based on " + dict_names[dicts[i]][0])); 
 	dict_names[i];
     }
-    if (initial_dict) {
-	$("#highlight-option").val("dict-" + initial_dict);
+    if (initial_highlight_option) {
+	$("#highlight-option").val(initial_highlight_option);
     }
     update_highlight_option();
 

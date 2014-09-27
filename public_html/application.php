@@ -70,6 +70,13 @@ function validate_dicts($dicts)
     }
 }
 
+function validate_usage_notes($dicts)
+{
+    if (!(is_string($dicts))) {
+        die("Invalid usage notes!");
+    }
+}
+
 function create_task_entry($id)
 {
     global $mysqli;
@@ -374,36 +381,81 @@ function get_dicts_for_word($word)
     mysqli_select_db($mysqli, $dict_db_name) or die('Could not select database');
 
     $in_dicts = [];
-    $query = $mysqli->prepare("SELECT SQL_CACHE dict FROM dict
+    $lemmas_in_dict = [];
+    foreach ($dicts as $dict) {
+        $lemmas_in_dict[$dict] = [];
+    }
+    $query = $mysqli->prepare("SELECT SQL_CACHE pos FROM dict
 WHERE headword = ? AND dict = ?");
     foreach ($lemmas as $lemma) {
         $headword = $lemma[0];
-	$query->bind_param('ss', $headword, $dict);
-	foreach ($dicts as $dict) {
-	    $query->execute() or die('Query failed: ' . $mysqli->error);
-	    $query->store_result();
-	    if ($query->num_rows > 0) {
-	        if (!in_array($dict, $in_dicts)) {
-	            $in_dicts[] = $dict;
-	        }
-	    }
-	    $query->free_result();
-	}
+        $possible_pos = $lemma[1];
+        $query->bind_param('ss', $headword, $dict);
+        foreach ($dicts as $dict) {
+            $query->execute() or die('Query failed: ' . $mysqli->error);
+            $query->bind_result($pos);
+            while ($query->fetch()) {
+                if (!check_pos($possible_pos, $pos)) {
+                    continue;
+                }
+                if (!in_array($dict, $in_dicts)) {
+                    $in_dicts[] = $dict;
+                }
+                if (!in_array($headword, $lemmas_in_dict)) {
+                    $lemmas_in_dict[$dict][] = $headword;
+                }
+            }
+            $query->free_result();
+        }
     }
     
     $omitted_dicts = [];
-	foreach ($dicts as $dict) {
-	    if (!in_array($dict, $in_dicts)) {
-	        $omitted_dicts[] = $dict;
-	    }
-	}
+    foreach ($dicts as $dict) {
+        if (!in_array($dict, $in_dicts)) {
+            $omitted_dicts[] = 'x' . $dict;
+        }
+    }
     $omitted_dicts = implode("", $omitted_dicts);
     
     validate_dicts($omitted_dicts);
 
+    $usage_notes = [];
+    $query = $mysqli->prepare("SELECT SQL_CACHE note_class FROM dict_usage_notes
+WHERE headword = ? AND dict = ?");
+    foreach ($dicts as $dict) {
+        $dict_usage_notes = [];
+        $first_lemma = true;
+        foreach ($lemmas as $lemma) {
+            $headword = $lemma[0];
+	        if (!in_array($headword, $lemmas_in_dict[$dict])) {
+	            continue;
+	        }
+            $lemma_usage_notes = [];
+            $query->bind_param('ss', $headword, $dict);
+            $query->execute() or die('Query failed: ' . $mysqli->error);
+            $query->bind_result($note_class);
+            while ($query->fetch()) {
+                $usage_note = $note_class . $dict;
+                $lemma_usage_notes[] = $usage_note;
+            }
+            $query->free_result();
+            if ($first_lemma) {
+                $dict_usage_notes = $lemma_usage_notes;
+                $first_lemma = false;
+            } else {
+                // Usage notes require a unanimous vote from all possible lemmas.
+                $dict_usage_notes = array_intersect($dict_usage_notes, $lemma_usage_notes);
+            }
+        }
+        $usage_notes = array_merge($usage_notes, $dict_usage_notes);
+    }
+    $usage_notes = implode("", $usage_notes);
+    
+    validate_usage_notes($usage_notes);
+
     mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
-    return $omitted_dicts;
+    return $omitted_dicts . $usage_notes;
 }
 
 // Generates the main content of an annotated text, saving it to
@@ -574,6 +626,7 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
 // Strips out all the annotations/HTML character refs added by the above.
 function strip_annotations($content)
 {
+  $text = str_replace("<div class='line'>&nbsp;</div>\n", "", $content);
   $text = str_replace("<div class='line'>&nbsp;</div>", "", $content);
   $text = str_replace("&nbsp;", " ", $text);
   $text = str_replace("&#8203;", "", $text);
@@ -841,6 +894,16 @@ WHERE morphdef.lemma = ?
     return $lemmas;
 }
 
+// Check whether two units of part-of-speech info are compatible.
+function check_pos($pos1, $pos2)
+{
+    if ($pos1 == '' || $pos2 == '') {
+        // One of the POS lists is empty, meaning nothing is known.
+        return true;
+    }
+    return count(array_intersect(str_split($pos1), str_split($pos2))) > 0;
+}
+
 // Get a list of definitions from the wordnet30 database.
 function get_wordnet_definitions($word)
 {
@@ -901,14 +964,8 @@ function get_dict_definitions($word)
         return;
     }
 
-    // Lemmatize and discard the POS info.
     $word = strtolower($word);
     $lemmas = lemmatize($word, false);
-    $lemmas2 = [];
-    foreach ($lemmas as $lemma) {
-        $lemmas2[] = $lemma[0];
-    }
-    $lemmas2 = array_unique($lemmas2);
     
     mysqli_select_db($mysqli, $dict_db_name) or die('Could not select database');
     
@@ -916,18 +973,25 @@ function get_dict_definitions($word)
     
     foreach ($dicts as $dict) {
         $deflist = [];
-    
-        foreach ($lemmas2 as $lemma) {
+        
+        $headwords_used = [];
+        foreach ($lemmas as $lemma) {
+            if (in_array($lemma[0], $headwords_used)) {
+                continue;
+            }
             $query = $mysqli->prepare("
-SELECT entry
+SELECT entry, pos
 FROM dict
 WHERE dict.dict = ? AND dict.headword = ?
 ");
-            $query->bind_param('ss', $dict, $lemma);
+            $query->bind_param('ss', $dict, $lemma[0]);
             if ($query->execute()) {
-                $query->bind_result($entry);
+                $query->bind_result($entry, $pos);
                 while ($query->fetch()) {
-                    $deflist[] = [$entry];
+                    if (check_pos($pos, $lemma[1])) {
+                        $deflist[] = [$entry];
+                        $headwords_used[] = $lemma[0];
+                    }
                 }
                 $query->free_result();
             }
