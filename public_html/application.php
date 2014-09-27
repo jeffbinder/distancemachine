@@ -36,7 +36,7 @@ function validate_title($title)
 function validate_text($text)
 {
     if (!(is_string($text) && mb_check_encoding($text, 'UTF-8'))
-        || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u', $text)) {
+        || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', $text)) {
         die("Text is not a valid UTF-8 string.");
     }
 }
