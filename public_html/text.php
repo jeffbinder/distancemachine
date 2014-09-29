@@ -155,9 +155,9 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
   <div id="stats-box">
     Word usage statistics for &ldquo;<span class="document-title"></span>&rdquo;
     <hr />
-    Percentage of words common/uncommon in each year:
+    Percentage of words uncommon in each year:
     <div id="document-chart"></div>
-    <div>The black line shows the % of words common in that year; other lines indicate the % of words more common <span class="old-word">earlier</span>, <span class="new-word">later</span>, or <span class="lapsed-word">both</span>.</div>
+    <div>The lines indicate the % of words more common <span class="old-word">earlier</span>, <span class="new-word">later</span>, or <span class="lapsed-word">both</span>.</div>
     <hr />
     <div id="selected-year-stats"></div>
     <hr />

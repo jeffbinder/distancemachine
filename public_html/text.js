@@ -490,13 +490,20 @@ function update_document_stats()
         create_document_x_values();
     }
 
+    var max = 0.0;
+    for (var i = 0; i < nyears; i++) {
+	if (stats["o"][i] > max) max = stats["o"][i];
+	if (stats["n"][i] > max) max = stats["n"][i];
+	if (stats["l"][i] > max) max = stats["l"][i];
+    }
+
     $("#document-chart").html("");
 
     var w = 410,
         h = 250,
         xmargin = 60,
         ymargin = 20,
-        y = d3.scale.linear().domain([0, 100.0]).range([h - ymargin, 10]),
+        y = d3.scale.linear().domain([0, max]).range([h - ymargin, 10]),
         x = d3.scale.linear().domain([start_year, end_year]).range([xmargin, w - 10]);
 
     var vis = d3.select("#document-chart")
@@ -518,7 +525,7 @@ function update_document_stats()
 	    .style("stroke-width", "2px")
             .attr("d", line);
     }
-    add_line("c", "black");
+    //add_line("c", "black");
     add_line("o", "blue");
     add_line("n", "red");
     add_line("l", "orange");
@@ -632,7 +639,7 @@ function hide_stats_box()
 function update_stats_box_height()
 {
     var h = window.innerHeight;
-    $("#dictionary-stats-area").css("max-height", h - 482 - 115 - 24);
+    $("#dictionary-stats-area").css("max-height", h - 467 - 115 - 24);
 }
 
 function get_selection()
