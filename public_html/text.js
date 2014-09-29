@@ -141,6 +141,7 @@ function update_highlight_option()
 	$("#slider").slider("disable");
 	$(".selected-year").css("color", "grey");
     }
+    update_word_list();
 }
 
 // Change the stored year and update highlighting accordingly.
@@ -221,12 +222,12 @@ function create_word_grid(words, css_class)
     var html = [];
     for (var i in words) {
 	html.push("<div class='grid-word'><span class='" + css_class
-                  + "'>" + words[i] + "</span></div>");
+                  + "'> " + words[i] + " </span></div>");
     }
     return html.join("");
 }
 
-function show_word_list(word, corpus)
+function update_word_list()
 {
     var option_text;
     if (window.highlight_option == "ngrams") {
@@ -307,8 +308,15 @@ function show_word_list(word, corpus)
     html = html.join("");
     $("#word-list-area").html(html);
 
+    update_word_list_height();
+}
+
+function show_word_list()
+{
+    update_word_list();
     $("#word-list").css("display", "inline");
     update_word_list_height();
+    hide_word_info();
 }
 
 function hide_word_list()
@@ -511,9 +519,10 @@ $(window).load(function () {
         update_word_list_height();
     };
     
-    $("#text-area,#definition-area").dblclick(function (e) {
+    $("#text-area,#definition-area,#word-list-area").dblclick(function (e) {
         var word = get_selection();
         show_word_info(word, window.corpus);
+	hide_word_list();
     });
     $("#text-area span").on("touchstart", function (e) {
         window.touching_word = true;
@@ -525,6 +534,7 @@ $(window).load(function () {
         if (window.touching_word) {
             var word = e.target.textContent;
             show_word_info(word, window.corpus);
+	    hide_word_list();
             return false;
         }
     });
@@ -545,6 +555,7 @@ $(window).load(function () {
         if (e.keyCode == 13) {
             var word = $("#word-lookup").val();
             show_word_info(word, window.corpus);
+	    hide_word_list();
         }
     });
 
