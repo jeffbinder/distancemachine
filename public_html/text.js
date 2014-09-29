@@ -203,6 +203,127 @@ function update_word_info_height()
     $("#definition-area").css("max-height", h - 383 - 115 - 24);
 }
 
+function get_words_with_class(css_class)
+{
+    var d = {};
+    $("#text-area ." + css_class).each(function (i, e) {
+	d[e.innerText.toLowerCase()] = 1;
+    });
+    var words = [];
+    for (var word in d) {
+	words.push(word);
+    }
+    return words.sort();
+}
+
+function create_word_grid(words, css_class)
+{
+    var html = [];
+    for (var i in words) {
+	html.push("<div class='grid-word'><span class='" + css_class
+                  + "'>" + words[i] + "</span></div>");
+    }
+    return html.join("");
+}
+
+function show_word_list(word, corpus)
+{
+    var option_text;
+    if (window.highlight_option == "ngrams") {
+	option_text = "The following words were marked as uncommon in <b>" + window.current_year + "</b>.";
+    } else {
+        var dict = window.highlight_option.substring(5);
+	option_text = "The following words were highlighted based on <b>" + dict_names[dict][1] + "</b>.";
+    }
+    $("#word-list-option-text").html(option_text);
+
+    var html = [];
+
+    update_highlighting(true, true);
+    if (window.highlight_option == "ngrams") {
+
+	var words = get_words_with_class("old-word");
+	if (words.length == 0) {
+	    html.push("No words found that were more common earlier.");
+	} else {
+	    html.push("Words that were more common earlier:<div>");
+	    html.push(create_word_grid(words, "old-word"));
+	    html.push("</div>");
+	}
+	html.push("<hr />");
+
+	words = get_words_with_class("new-word");
+	if (words.length == 0) {
+	    html.push("<div>No words found that were more common later.</div>");
+	} else {
+	    html.push("<div>Words that were more common later:</div><div>");
+	    html.push(create_word_grid(words, "new-word"));
+	    html.push("</div>");
+	}
+	html.push("<hr />");
+
+	words = get_words_with_class("lapsed-word");
+	if (words.length == 0) {
+	    html.push("<div>No words found that were more common both earlier and later.</div>");
+	} else {
+	    html.push("<div>Words that were more common both earlier and later:</div><div>");
+	    html.push(create_word_grid(words, "lapsed-word"));
+	    html.push("</div>");
+	}
+
+    } else {
+
+	words = get_words_with_class("obsolete-word");
+	if (words.length == 0) {
+	    html.push("No words found that were marked as rare or obsolete in the dictionary.");
+	} else {
+	    html.push("Words that are marked as rare or obsolete in the dictionary:<div>");
+	    html.push(create_word_grid(words, "obsolete-word"));
+	    html.push("</div>");
+	}
+	html.push("<hr />");
+
+	words = get_words_with_class("vulgar-word");
+	if (words.length == 0) {
+	    html.push("<div>No words found that were marked as vulgar, colloquial, or improper in the dictionary.</div>");
+	} else {
+	    html.push("<div>Words that were marked as vulgar, colloquial, or improper in the dictionary:</div><div>");
+	    html.push(create_word_grid(words, "vulgar-word"));
+	    html.push("</div>");
+	}
+	html.push("<hr />");
+
+	var words = get_words_with_class("omitted-word");
+	if (words.length == 0) {
+	    html.push("<div>All words in the text were found in the dictionary.</div>");
+	} else {
+	    html.push("<div>Words that were not found in the dictionary:</div><div>");
+	    html.push(create_word_grid(words, "omitted-word"));
+	    html.push("</div>");
+	}
+        
+    }
+
+    html = html.join("");
+    $("#word-list-area").html(html);
+
+    $("#word-list").css("display", "inline");
+    update_word_list_height();
+}
+
+function hide_word_list()
+{
+    $("#word-list").css("display", "none");
+}
+
+function update_word_list_height()
+{
+    var h = window.innerHeight;
+    $("#word-list-area").css("max-height", h - 33
+			     - $("#word-list-option-text").height()
+			     - 115 - 24);
+}
+
 function get_selection()
 {
     var text = "";
@@ -383,9 +504,11 @@ $(window).load(function () {
     window.onscroll = update_visibility;
     
     update_word_info_height();
+    update_word_list_height();
     window.onresize = function () {
         update_visibility();
         update_word_info_height();
+        update_word_list_height();
     };
     
     $("#text-area,#definition-area").dblclick(function (e) {
@@ -427,6 +550,7 @@ $(window).load(function () {
 
     $("#main-area").click(function(e) {
         hide_word_info();
+        hide_word_list();
         hide_help_box();
         hide_save_box();
         hide_save_error_box();
@@ -437,11 +561,14 @@ $(window).load(function () {
     $("#word-info").click(function(e) {
         hide_help_box();
     });
+    $("#word-list").click(function(e) {
+        hide_help_box();
+    });
     
     // Prevent scroll wheel events from scrolling the body when the cursor is in a fixed
     // div.  This is mainly so that the user can scroll the definition area without
     // scrolling the document as a whole when they get to the end.
-    $("#word-info,#header")
+    $("#word-info,#word-list,#header")
         .hover(function(e) {
             $("body").css("overflow", "hidden");
         }, function(e) {

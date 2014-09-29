@@ -104,7 +104,7 @@ echo "totals = " . json_encode($totals) . ";\n";
      <div id="slider" style="float:right"></div>
      <div style="float:right"><button id="play-button"></button></div>
     </div>
-    <div style="clear:both">Select an option above &ndash; double-click words to see details</div>
+    <div style="clear:both">Double-click words to see details &ndash; <a href="javascript:show_word_list()">show list of highlighted words</a></div>
    </div>
    <div id="option-area-right" style="float:right">
     <div style="float:right;margin-right:19px;margin-top:2px;margin-bottom:3px">
@@ -155,6 +155,11 @@ echo "totals = " . json_encode($totals) . ";\n";
      <input id="url-area" type="text" name="link" style="width:400px">
     </div>
   </div>
+  <div id="word-list">
+    <div><span id="word-list-option-text"></span></div>
+    <hr />
+    <div id="word-list-area"></div>
+  </div>
   <div id="save-error-box">
     <div>The server encountered an error saving the text.</div>
   </div>
@@ -168,7 +173,7 @@ echo "totals = " . json_encode($totals) . ";\n";
     <div class="key" id="dict-key" style="clear:both">
      <div><span class="omitted-word">red</span> words are omitted from the selected dictionary</div>
      <div><span class="obsolete-word">blue</span> words are marked as rare or obsolete</div>
-     <div><span class="vulgar-word">yellow</span> words are marked as vulgar, provincial, or improper</div>
+     <div><span class="vulgar-word">yellow</span> words are marked as vulgar, colloquial, or improper</div>
     </div>
     <div>
      This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that uses historical data from Google books to identify words that were uncommon at a given point in time.

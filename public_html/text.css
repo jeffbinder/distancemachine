@@ -121,6 +121,9 @@
     #word-info {
 	visibility: hidden;
     }
+    #word-list {
+	visibility: hidden;
+    }
     #save-box {
 	visibility: hidden;
     }
@@ -141,6 +144,38 @@
     background-color: #f1ede5;
     border: 1px solid #c5b390;
     display: none;
+}
+
+#word-list {
+    position: fixed;
+    top: 115px;
+    right: 25px;
+    width: 420px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+}
+
+#word-list-area {
+    max-height: 250px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+#word-list-area > div {
+    margin-top: 0.5em;
+}
+
+#word-list-area > hr {
+    clear: both;
+}
+
+.grid-word {
+    float: left;
+    min-width: 100px;
+    margin-right: 5px;
+    margin-bottom: 5px;
 }
 
 #save-box {
