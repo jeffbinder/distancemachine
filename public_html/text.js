@@ -134,12 +134,15 @@ function update_highlight_option()
 	$("#play-button").button("enable");
 	$("#slider").slider("enable");
 	$(".selected-year").css("color", "black");
+	$("#print-header-text").html("Highlighting words uncommon in: <b>" + current_year + "</b>");
     } else {
+        var dict = window.highlight_option.substring(5);
 	$("#ngrams-key").css("display", "none");
 	$("#dict-key").css("display", "default");
 	$("#play-button").button("disable");
 	$("#slider").slider("disable");
-	$(".selected-year").css("color", "grey");
+	$("#selected-year-area").css("color", "grey");
+	$("#print-header-text").html("Highlighting words based on <b>" + dict_names[dict][1] + "</b>");
     }
     if (window.word_list_visible) {
 	update_word_list();
@@ -157,6 +160,9 @@ function set_year(year)
     update_highlighting(true);
     if (window.word_list_visible) {
 	update_word_list();
+    }
+    if (window.stats_box_visible) {
+	update_document_stats();
     }
 }
 
@@ -213,7 +219,7 @@ function get_words_with_class(css_class)
 {
     var d = {};
     $("#text-area ." + css_class).each(function (i, e) {
-	d[e.innerText.toLowerCase()] = 1;
+	d[$(e).text().toLowerCase()] = 1;
     });
     var words = [];
     for (var word in d) {
@@ -322,6 +328,7 @@ function show_word_list()
     $("#word-list").css("display", "inline");
     update_word_list_height();
     hide_word_info();
+    hide_stats_box();
     window.word_list_visible = true;
 }
 
@@ -337,6 +344,295 @@ function update_word_list_height()
     $("#word-list-area").css("max-height", h - 33
 			     - $("#word-list-option-text").height()
 			     - 115 - 24);
+}
+
+function compute_document_stats()
+{
+    var nyears = end_year - start_year + 1;
+
+    var stats = {
+	"c": new Array(nyears),
+	"o": new Array(nyears),
+	"n": new Array(nyears),
+	"l": new Array(nyears)
+    };
+    for (var i = 0; i < nyears; i++) {
+	stats["c"][i] = 0;
+	stats["o"][i] = 0;
+	stats["n"][i] = 0;
+	stats["l"][i] = 0;
+    }
+
+    var dict_stats = {
+	"x": {},
+	"o": {},
+	"v": {}
+    };
+    for (var dict in dict_names) {
+	dict_stats["x"][dict] = 0;
+	dict_stats["o"][dict] = 0;
+	dict_stats["v"][dict] = 0;
+    }
+
+    var start = 0, end = window.lines.length - 1;
+    for (var i = start; i <= end; i++) {
+        var line = lines[i];
+        var children = line.getElementsByTagName("span");
+        var nchildren = children.length;
+        for (var j = 0; j < nchildren; j++) {
+	    var child = children[j];
+	    var usage = child.getAttribute("data-usage");
+	    if (usage) {
+		var len = usage.length;
+		for (var k = 0; k < len; k += 5) {
+		    var usage_state = usage.substr(k, 1);
+		    var ch = usage.substr(k+3, 1);
+		    if (ch == "x") {
+			var cent = parseInt(usage.substr(k+1, 2)) * 100;
+			var idx = cent - start_year;
+			for (var a = 0; a < 100; a++) {
+			    stats[usage_state][idx + a] += 1;
+			}
+		    } else if (ch == "l") {
+			var cent = parseInt(usage.substr(k+1, 2)) * 100;
+			var idx = cent - start_year;
+			for (var a = 0; a < 50; a++) {
+			    stats[usage_state][idx + a] += 1;
+			}
+		    } else if (ch == "r") {
+			var cent = parseInt(usage.substr(k+1, 2)) * 100;
+			var idx = cent - start_year;
+			for (var a = 50; a < 100; a++) {
+			    stats[usage_state][idx + a] += 1;
+			}
+		    } else {
+			ch = usage.substr(k+4, 1);
+			if (ch == "x") {
+			    var dec = parseInt(usage.substr(k+1, 3)) * 10;
+			    var idx = dec - start_year;
+			    for (var a = 0; a < 10; a++) {
+				stats[usage_state][idx + a] += 1;
+			    }
+			} else if (ch == "l") {
+			    var dec = parseInt(usage.substr(k+1, 3)) * 10;
+			    var idx = dec - start_year;
+			    for (var a = 0; a < 5; a++) {
+				stats[usage_state][idx + a] += 1;
+			    }
+			} else if (ch == "r") {
+			    var dec = parseInt(usage.substr(k+1, 3)) * 10;
+			    var idx = dec - start_year;
+			    for (var a = 5; a < 10; a++) {
+				stats[usage_state][idx + a] += 1;
+			    }
+			} else {
+			    var y = parseInt(usage.substr(k+1, 4));
+			    var idx = y - start_year;
+			    stats[usage_state][idx] += 1;
+			}
+		    }
+		}
+	    }
+	    var dicts = child.getAttribute("data-dicts");
+	    if (dicts) {
+		for (var dict in dict_names) {
+		    if (dicts.indexOf("x" + dict) != -1) {
+			dict_stats["x"][dict] += 1;
+		    }
+		    if (dicts.indexOf("o" + dict) != -1) {
+			dict_stats["o"][dict] += 1;
+		    }
+		    if (dicts.indexOf("v" + dict) != -1) {
+			dict_stats["v"][dict] += 1;
+		    }
+		}
+	    }
+        }
+    }
+
+    var scale = 100.0 / word_count;
+    for (var i = 0; i < nyears; i++) {
+	stats["c"][i] = word_count - stats["o"][i]
+	    - stats["n"][i] - stats["l"][i];
+	stats["c"][i] *= scale;
+	stats["o"][i] *= scale;
+	stats["n"][i] *= scale;
+	stats["l"][i] *= scale;
+    }
+    for (var dict in dict_names) {
+	dict_stats["x"][dict] *= scale;
+	dict_stats["o"][dict] *= scale;
+	dict_stats["v"][dict] *= scale;
+    }
+
+    window.document_stats = stats;
+    window.document_dict_stats = dict_stats;
+}
+
+function create_document_x_values()
+{
+    window.document_x_values = [];
+    for (var i = start_year; i <= end_year; i++) {
+        document_x_values.push(i);
+    }
+}
+
+function update_document_stats()
+{
+    var nyears = end_year - start_year + 1;
+
+    if (!window.document_stats) {
+	compute_document_stats();
+    }
+    var stats = window.document_stats;
+
+    if (!window.document_x_values) {
+        create_document_x_values();
+    }
+
+    $("#document-chart").html("");
+
+    var w = 410,
+        h = 250,
+        xmargin = 60,
+        ymargin = 20,
+        y = d3.scale.linear().domain([0, 100.0]).range([h - ymargin, 10]),
+        x = d3.scale.linear().domain([start_year, end_year]).range([xmargin, w - 10]);
+
+    var vis = d3.select("#document-chart")
+        .append("svg:svg")
+        .attr("width", w)
+        .attr("height", h)
+        .attr("font-size", "10pt");
+        
+    var g = vis.append("svg:g");
+    
+    function add_line(usage_class, color) {
+	var line = d3.svg.line()
+            .x(function (d) { return x(d); })
+            .y(function (d) { return y(stats[usage_class][d - start_year]); })
+	g.append("path")
+	    .datum(document_x_values)
+            .style("fill", "none")
+            .style("stroke", color)
+	    .style("stroke-width", "2px")
+            .attr("d", line);
+    }
+    add_line("c", "black");
+    add_line("o", "blue");
+    add_line("n", "red");
+    add_line("l", "orange");
+    
+    g.append("svg:line")
+        .attr("x1", xmargin)
+        .attr("y1", h - ymargin)
+        .attr("x2", w - 10)
+        .attr("y2", h - ymargin)
+        .attr("stroke", "black");
+
+    g.append("svg:line")
+        .attr("x1", xmargin)
+        .attr("y1", h - ymargin)
+        .attr("x2", xmargin)
+        .attr("y2", 0)
+        .attr("stroke", "black");
+
+    g.append("svg:line")
+        .attr("x1", x(current_year))
+        .attr("y1", h - ymargin)
+        .attr("x2", x(current_year))
+        .attr("y2", 0)
+        .attr("stroke", "black");
+    
+    g.selectAll(".xTick")
+        .data(x.ticks(5))
+      .enter().append("svg:line")
+        .attr("class", "xTick")
+        .attr("x1", x)
+        .attr("y1", h - ymargin + 5)
+        .attr("x2", x)
+        .attr("y2", h - ymargin)
+        .attr("stroke", "black");
+    
+    g.selectAll(".xLabel")
+        .data(x.ticks(5))
+        .enter().append("svg:text")
+        .attr("class", "xLabel")
+        .text(String)
+        .attr("x", x)
+        .attr("y", h - ymargin + 17)
+        .attr("text-anchor", "middle");
+
+    g.selectAll(".yTick")
+        .data(y.ticks(5))
+      .enter().append("svg:line")
+        .attr("class", "yTick")
+        .attr("y1", y)
+        .attr("x1", xmargin - 5)
+        .attr("y2", y)
+        .attr("x2", xmargin)
+        .attr("stroke", "black");
+
+    g.selectAll(".yLabel")
+        .data(y.ticks(5))
+      .enter().append("svg:text")
+        .attr("class", "yLabel")
+        .text(function (d) {return d + "%";})
+        .attr("x", xmargin - 7)
+        .attr("y", y)
+        .attr("text-anchor", "end")
+        .attr("dy", 4);
+ 
+    var html = [];
+    html.push("<div><b>" + d3.round(stats["c"][current_year - start_year], 1)
+	      + "</b>% of words in the text are common in <b>" + current_year + "</b></div>");
+    html.push("<div><b>" + d3.round(stats["o"][current_year - start_year], 1)
+	      + "</b>% of words are more common <span class='old-word'>earlier</span></div>");
+    html.push("<div><b>" + d3.round(stats["n"][current_year - start_year], 1)
+	      + "</b>% of words are more common <span class='new-word'>later</span></div>");
+    html.push("<div><b>" + d3.round(stats["l"][current_year - start_year], 1)
+	      + "</b>% of words are more common <span class='lapsed-word'>both earlier and later</span></div>");
+    $("#selected-year-stats").html(html.join(""));
+
+    var dict_stats = window.document_dict_stats;
+    html = [];
+    for (var i = 0; i < dicts.length; i++) {
+	var dict = dicts[i];
+	if (i > 0) {
+	    html.push("<hr />");
+	}
+	html.push("<b>" + d3.round(100.0 - dict_stats["x"][dict], 1)
+		  + "</b>% of words were found in <b>"
+		  + dict_names[dict][0] + "</b>");
+	html.push("<div><b>" + d3.round(dict_stats["x"][dict], 1)
+		  + "</b>% were <span class='omitted-word'>not found</span></div>"); 
+	html.push("<div><b>" + d3.round(dict_stats["o"][dict], 1)
+		  + "</b>% are marked as <span class='obsolete-word'>rare or obsolete</span></div>"); 
+	html.push("<div><b>" + d3.round(dict_stats["v"][dict], 1)
+		  + "</b>% are marked as <span class='vulgar-word'>vulgar, colloquial, or improper</span></div>"); 
+    }
+    $("#dictionary-stats").html(html.join(""));
+}
+
+function show_stats_box()
+{
+    update_document_stats();
+    $("#stats-box").css("display", "inline");
+    hide_word_info();
+    hide_word_list();
+    window.stats_box_visible = true;
+}
+
+function hide_stats_box()
+{
+    $("#stats-box").css("display", "none");
+    window.stats_box_visible = false;
+}
+
+function update_stats_box_height()
+{
+    var h = window.innerHeight;
+    $("#dictionary-stats-area").css("max-height", h - 482 - 115 - 24);
 }
 
 function get_selection()
@@ -447,7 +743,8 @@ $(window).load(function () {
     if (saved) {
         $("#save-link").text("Text saved");
     }
-    $("#corpus-name").text(corpus_names[corpus]);
+    $(".corpus-name").text(corpus_names[corpus]);
+    $(".document-title").text(title);
 
     show_print_link_message();
     $("#print-title").text(title + " (" + corpus_names[corpus] + ")");
@@ -520,16 +817,19 @@ $(window).load(function () {
     
     update_word_info_height();
     update_word_list_height();
+    update_stats_box_height();
     window.onresize = function () {
         update_visibility();
         update_word_info_height();
         update_word_list_height();
+        update_stats_box_height();
     };
     
     $("#text-area,#definition-area,#word-list-area").dblclick(function (e) {
         var word = get_selection();
         show_word_info(word, window.corpus);
 	hide_word_list();
+	hide_stats_box();
     });
     $("#text-area span").on("touchstart", function (e) {
         window.touching_word = true;
@@ -542,6 +842,7 @@ $(window).load(function () {
             var word = e.target.textContent;
             show_word_info(word, window.corpus);
 	    hide_word_list();
+	    hide_stats_box();
             return false;
         }
     });
@@ -563,12 +864,14 @@ $(window).load(function () {
             var word = $("#word-lookup").val();
             show_word_info(word, window.corpus);
 	    hide_word_list();
+	    hide_stats_box();
         }
     });
 
     $("#main-area").click(function(e) {
         hide_word_info();
         hide_word_list();
+	hide_stats_box();
         hide_help_box();
         hide_save_box();
         hide_save_error_box();
@@ -586,7 +889,7 @@ $(window).load(function () {
     // Prevent scroll wheel events from scrolling the body when the cursor is in a fixed
     // div.  This is mainly so that the user can scroll the definition area without
     // scrolling the document as a whole when they get to the end.
-    $("#word-info,#word-list,#header")
+    $("#word-info,#word-list,#dictionary-stats,#header")
         .hover(function(e) {
             $("body").css("overflow", "hidden");
         }, function(e) {

@@ -146,6 +146,49 @@
     display: none;
 }
 
+#stats-box {
+    position: fixed;
+    top: 115px;
+    right: 25px;
+    width: 420px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+}
+
+#document-chart {
+    width: 400px;
+    height: 250px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#stats-box div {
+    margin-top: 0.5em;
+}
+
+#dictionary-stats {
+    margin-top: 0 !important;
+}
+
+#dictionary-stats-area {
+    margin-top: 0 !important;
+    max-height: 250px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+#stats-box ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+}
+#stats-box ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0,0,0,.5);
+    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
+
 #word-list {
     position: fixed;
     top: 115px;
@@ -161,6 +204,16 @@
     max-height: 250px;
     overflow-y: scroll;
     overflow-x: hidden;
+}
+
+#word-list ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+}
+#word-list ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0,0,0,.5);
+    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 
 #word-list-area > div {

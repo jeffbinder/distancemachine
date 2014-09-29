@@ -85,6 +85,9 @@ echo "saved = " . json_encode($saved) . ";\n";
 $totals = [$corpus => get_totals($corpus)];
 echo "totals = " . json_encode($totals) . ";\n";
 
+// Get the word count of the text.
+echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
+
 ?>
   </script>
  </head>
@@ -104,7 +107,7 @@ echo "totals = " . json_encode($totals) . ";\n";
      <div id="slider" style="float:right"></div>
      <div style="float:right"><button id="play-button"></button></div>
     </div>
-    <div style="clear:both">Double-click words to see details &ndash; <a href="javascript:show_word_list()">show list of highlighted words</a></div>
+    <div style="clear:both"><a href="javascript:show_word_list()">Show list of highlighted words</a> &ndash; <a href="javascript:show_stats_box()">overall stats for document</a></div>
    </div>
    <div id="option-area-right" style="float:right">
     <div style="float:right;margin-right:19px;margin-top:2px;margin-bottom:3px">
@@ -130,7 +133,7 @@ echo "totals = " . json_encode($totals) . ";\n";
    <div id="print-header">
     <div>
      <div><span id="print-title"></span></div>
-     <div style="margin-top:1em">Highlighting words uncommon in: <span class="selected-year"></span></div>
+     <div id="print-header-text" style="margin-top:1em"></div>
     </div>
    </div>
    <div id="text-area">
@@ -143,11 +146,24 @@ echo "totals = " . json_encode($totals) . ";\n";
   <div id="word-info">
     <div>Selected word: <span id="selected-word"></span></div>
     <hr />
-    Frequency in the Google Books <span id="corpus-name"></span> corpus:
+    Frequency in the Google Books <span class="corpus-name"></span> corpus:
     <div id="word-usage-chart"></div>
     <div><span id="usage-periods-text"></span></div>
     <hr />
     <div id="definition-area"><span id="definitions"></span></div>
+  </div>
+  <div id="stats-box">
+    Word usage statistics for &ldquo;<span class="document-title"></span>&rdquo;
+    <hr />
+    Percentage of words common/uncommon in each year:
+    <div id="document-chart"></div>
+    <div>The black line shows the % of words common in that year; other lines indicate the % of words more common <span class="old-word">earlier</span>, <span class="new-word">later</span>, or <span class="lapsed-word">both</span>.</div>
+    <hr />
+    <div id="selected-year-stats"></div>
+    <hr />
+    <div id="dictionary-stats-area">
+      <div id="dictionary-stats"></div>
+    </div>
   </div>
   <div id="save-box">
     <div>This text has been saved!  Copy this link to share it or access it in the future:</div>

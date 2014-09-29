@@ -211,6 +211,18 @@ function set_task_saved($id)
     $query->execute() or die('Query failed: ' . $mysqli->error);
 }
 
+// Get the word count for a text.
+function get_word_count($id)
+{
+    global $mysqli;
+    $query = $mysqli->prepare("SELECT words_completed FROM task WHERE id = ?");
+    $query->bind_param('s', $id);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($nwords);
+    $query->fetch();
+    return $nwords;
+}
+
 // Get the yearly totals for a given corpus.
 function get_totals($corpus)
 {
