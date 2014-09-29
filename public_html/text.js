@@ -141,7 +141,9 @@ function update_highlight_option()
 	$("#slider").slider("disable");
 	$(".selected-year").css("color", "grey");
     }
-    update_word_list();
+    if (window.word_list_visible) {
+	update_word_list();
+    }
 }
 
 // Change the stored year and update highlighting accordingly.
@@ -153,6 +155,9 @@ function set_year(year)
     }
     window.current_year = year;
     update_highlighting(true);
+    if (window.word_list_visible) {
+	update_word_list();
+    }
 }
 
 function animate()
@@ -317,11 +322,13 @@ function show_word_list()
     $("#word-list").css("display", "inline");
     update_word_list_height();
     hide_word_info();
+    window.word_list_visible = true;
 }
 
 function hide_word_list()
 {
     $("#word-list").css("display", "none");
+    window.word_list_visible = false;
 }
 
 function update_word_list_height()
