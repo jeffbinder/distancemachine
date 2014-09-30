@@ -94,7 +94,7 @@
   <div id="word-info">
     <div>Selected word: <span id="selected-word"></span></div>
     <hr />
-    Frequency in the Google Books <span id="corpus-name"></span> corpus:
+    Frequency in the Google Books <span id="corpus-name"></span> corpus (click to view):
     <div id="word-usage-chart"></div>
     <div><span id="usage-periods-text"></span></div>
     <hr />

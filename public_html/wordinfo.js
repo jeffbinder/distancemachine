@@ -4,6 +4,10 @@ function create_x_values()
     for (var i = data_start_year; i <= data_end_year; i++) {
         x_values.push(i);
     }
+    window.decades = [];
+    for (var i = data_start_year; i <= data_end_year; i += 10) {
+        decades.push(i);
+    }
 }
 
 function update_word_usage_chart(word, corpus, data)
@@ -138,6 +142,30 @@ function update_word_usage_chart(word, corpus, data)
         .attr("y", y)
         .attr("text-anchor", "end")
         .attr("dy", 4);
+
+    g.selectAll(".decade")
+        .data(decades)
+      .enter().append("svg:a")
+        .attr("xlink:href", function (d) {
+            return ('http://www.google.com/search?q="' + word
+                    + '"&tbs=bks:1,cdr:1,cd_min:' + d + ',cd_max:' + (d + 10)
+                    + '&num=100&lr=lang_en');
+        })
+        .attr("target", "_blank")
+      .append("svg:rect")
+        .attr("class", "decade")
+        .attr("x", x)
+        .attr("y", 0)
+        .attr("height", h - ymargin)
+        .attr("width", function (d) {return x(d+9) - x(d);})
+        .attr("fill", "black")
+        .style("opacity", 0)
+        .on("mouseover", function (d) {
+            d3.select(this).style("opacity", 0.2);
+        })
+        .on("mouseout", function (d) {
+            d3.select(this).style("opacity", 0);
+        });
 }
 
 function update_word_usage_text(word, data)
