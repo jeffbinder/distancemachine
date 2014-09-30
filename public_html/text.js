@@ -592,7 +592,7 @@ function update_document_stats()
  
     var html = [];
     html.push("<div><b>" + d3.round(stats["c"][current_year - start_year], 1)
-	      + "</b>% of words in the text in common use in <b>" + current_year + "</b></div>");
+	      + "</b>% of words in the text are in common use in <b>" + current_year + "</b></div>");
     html.push("<div><b>" + d3.round(stats["o"][current_year - start_year], 1)
 	      + "</b>% of words are more common <span class='old-word'>earlier</span></div>");
     html.push("<div><b>" + d3.round(stats["n"][current_year - start_year], 1)
