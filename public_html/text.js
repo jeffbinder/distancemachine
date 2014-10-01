@@ -392,7 +392,7 @@ function create_word_grid(words, css_class)
 {
     var html = [];
     for (var i in words) {
-	html.push("<div class='grid-word'><span class='" + css_class
+        html.push("<div class='grid-word'><span class='" + css_class
                   + "'> " + words[i] + " </span></div>");
     }
     return html.join("");
@@ -527,8 +527,8 @@ function update_word_list_height()
 {
     var h = window.innerHeight;
     $("#word-list-area").css("max-height", h - 33
-        		     - $("#word-list-option-text").height()
-			     - 115 - 24);
+                             - $("#word-list-option-text").height()
+                             - 115 - 24);
 }
 
 function compute_document_stats()
@@ -536,27 +536,27 @@ function compute_document_stats()
     var nyears = end_year - start_year + 1;
 
     var stats = {
-	"c": new Array(nyears),
-	"o": new Array(nyears),
-	"n": new Array(nyears),
-	"l": new Array(nyears)
+        "c": new Array(nyears),
+        "o": new Array(nyears),
+        "n": new Array(nyears),
+        "l": new Array(nyears)
     };
     for (var i = 0; i < nyears; i++) {
-	stats["c"][i] = 0;
-	stats["o"][i] = 0;
-	stats["n"][i] = 0;
-	stats["l"][i] = 0;
+        stats["c"][i] = 0;
+        stats["o"][i] = 0;
+        stats["n"][i] = 0;
+        stats["l"][i] = 0;
     }
 
     var dict_stats = {
-	"x": {},
-	"o": {},
-	"v": {}
+        "x": {},
+        "o": {},
+        "v": {}
     };
     for (var dict in dict_names) {
-	dict_stats["x"][dict] = 0;
-	dict_stats["o"][dict] = 0;
-	dict_stats["v"][dict] = 0;
+        dict_stats["x"][dict] = 0;
+        dict_stats["o"][dict] = 0;
+        dict_stats["v"][dict] = 0;
     }
 
     var start = 0, end = window.lines.length - 1;
@@ -565,89 +565,89 @@ function compute_document_stats()
         var children = line.getElementsByTagName("span");
         var nchildren = children.length;
         for (var j = 0; j < nchildren; j++) {
-	    var child = children[j];
-	    var usage = child.getAttribute("data-usage");
-	    if (usage) {
-		var len = usage.length;
-		for (var k = 0; k < len; k += 5) {
-		    var usage_state = usage.substr(k, 1);
-		    var ch = usage.substr(k+3, 1);
-		    if (ch == "x") {
-			var cent = parseInt(usage.substr(k+1, 2)) * 100;
-			var idx = cent - start_year;
-			for (var a = 0; a < 100; a++) {
-			    stats[usage_state][idx + a] += 1;
-			}
-		    } else if (ch == "l") {
-			var cent = parseInt(usage.substr(k+1, 2)) * 100;
-			var idx = cent - start_year;
-			for (var a = 0; a < 50; a++) {
-			    stats[usage_state][idx + a] += 1;
-			}
-		    } else if (ch == "r") {
-			var cent = parseInt(usage.substr(k+1, 2)) * 100;
-			var idx = cent - start_year;
-			for (var a = 50; a < 100; a++) {
-			    stats[usage_state][idx + a] += 1;
-			}
-		    } else {
-			ch = usage.substr(k+4, 1);
-			if (ch == "x") {
-			    var dec = parseInt(usage.substr(k+1, 3)) * 10;
-			    var idx = dec - start_year;
-			    for (var a = 0; a < 10; a++) {
-				stats[usage_state][idx + a] += 1;
-			    }
-			} else if (ch == "l") {
-			    var dec = parseInt(usage.substr(k+1, 3)) * 10;
-			    var idx = dec - start_year;
-			    for (var a = 0; a < 5; a++) {
-				stats[usage_state][idx + a] += 1;
-			    }
-			} else if (ch == "r") {
-			    var dec = parseInt(usage.substr(k+1, 3)) * 10;
-			    var idx = dec - start_year;
-			    for (var a = 5; a < 10; a++) {
-				stats[usage_state][idx + a] += 1;
-			    }
-			} else {
-			    var y = parseInt(usage.substr(k+1, 4));
-			    var idx = y - start_year;
-			    stats[usage_state][idx] += 1;
-			}
-		    }
-		}
-	    }
-	    var dicts = child.getAttribute("data-dicts");
-	    if (dicts) {
-		for (var dict in dict_names) {
-		    if (dicts.indexOf("x" + dict) != -1) {
-			dict_stats["x"][dict] += 1;
-		    }
-		    if (dicts.indexOf("o" + dict) != -1) {
-			dict_stats["o"][dict] += 1;
-		    }
-		    if (dicts.indexOf("v" + dict) != -1) {
-			dict_stats["v"][dict] += 1;
-		    }
-		}
-	    }
+            var child = children[j];
+            var usage = child.getAttribute("data-usage");
+            if (usage) {
+                var len = usage.length;
+                for (var k = 0; k < len; k += 5) {
+                    var usage_state = usage.substr(k, 1);
+                    var ch = usage.substr(k+3, 1);
+                    if (ch == "x") {
+                        var cent = parseInt(usage.substr(k+1, 2)) * 100;
+                        var idx = cent - start_year;
+                        for (var a = 0; a < 100; a++) {
+                            stats[usage_state][idx + a] += 1;
+                        }
+                    } else if (ch == "l") {
+                        var cent = parseInt(usage.substr(k+1, 2)) * 100;
+                        var idx = cent - start_year;
+                        for (var a = 0; a < 50; a++) {
+                            stats[usage_state][idx + a] += 1;
+                        }
+                    } else if (ch == "r") {
+                        var cent = parseInt(usage.substr(k+1, 2)) * 100;
+                        var idx = cent - start_year;
+                        for (var a = 50; a < 100; a++) {
+                            stats[usage_state][idx + a] += 1;
+                        }
+                    } else {
+                        ch = usage.substr(k+4, 1);
+                        if (ch == "x") {
+                            var dec = parseInt(usage.substr(k+1, 3)) * 10;
+                            var idx = dec - start_year;
+                            for (var a = 0; a < 10; a++) {
+                                stats[usage_state][idx + a] += 1;
+                            }
+                        } else if (ch == "l") {
+                            var dec = parseInt(usage.substr(k+1, 3)) * 10;
+                            var idx = dec - start_year;
+                            for (var a = 0; a < 5; a++) {
+                                stats[usage_state][idx + a] += 1;
+                            }
+                        } else if (ch == "r") {
+                            var dec = parseInt(usage.substr(k+1, 3)) * 10;
+                            var idx = dec - start_year;
+                            for (var a = 5; a < 10; a++) {
+                                stats[usage_state][idx + a] += 1;
+                            }
+                        } else {
+                            var y = parseInt(usage.substr(k+1, 4));
+                            var idx = y - start_year;
+                            stats[usage_state][idx] += 1;
+                        }
+                    }
+                }
+            }
+            var dicts = child.getAttribute("data-dicts");
+            if (dicts) {
+                for (var dict in dict_names) {
+                    if (dicts.indexOf("x" + dict) != -1) {
+                        dict_stats["x"][dict] += 1;
+                    }
+                    if (dicts.indexOf("o" + dict) != -1) {
+                        dict_stats["o"][dict] += 1;
+                    }
+                    if (dicts.indexOf("v" + dict) != -1) {
+                        dict_stats["v"][dict] += 1;
+                    }
+                }
+            }
         }
     }
 
     var scale = 100.0 / word_count;
     for (var i = 0; i < nyears; i++) {
-	stats["c"][i] = word_count - stats["o"][i]
-	    - stats["n"][i] - stats["l"][i];
-	stats["c"][i] *= scale;
-	stats["o"][i] *= scale;
-	stats["n"][i] *= scale;
-	stats["l"][i] *= scale;
+        stats["c"][i] = word_count - stats["o"][i]
+            - stats["n"][i] - stats["l"][i];
+        stats["c"][i] *= scale;
+        stats["o"][i] *= scale;
+        stats["n"][i] *= scale;
+        stats["l"][i] *= scale;
     }
     for (var dict in dict_names) {
-	dict_stats["x"][dict] *= scale;
-	dict_stats["o"][dict] *= scale;
-	dict_stats["v"][dict] *= scale;
+        dict_stats["x"][dict] *= scale;
+        dict_stats["o"][dict] *= scale;
+        dict_stats["v"][dict] *= scale;
     }
 
     window.document_stats = stats;
@@ -667,7 +667,7 @@ function update_document_stats()
     var nyears = end_year - start_year + 1;
 
     if (!window.document_stats) {
-	compute_document_stats();
+        compute_document_stats();
     }
     var stats = window.document_stats;
 
@@ -677,9 +677,9 @@ function update_document_stats()
 
     var max = 0.0;
     for (var i = 0; i < nyears; i++) {
-	if (stats["o"][i] > max) max = stats["o"][i];
-	if (stats["n"][i] > max) max = stats["n"][i];
-	if (stats["l"][i] > max) max = stats["l"][i];
+        if (stats["o"][i] > max) max = stats["o"][i];
+        if (stats["n"][i] > max) max = stats["n"][i];
+        if (stats["l"][i] > max) max = stats["l"][i];
     }
 
     $("#document-chart").html("");
@@ -700,14 +700,14 @@ function update_document_stats()
     var g = vis.append("svg:g");
     
     function add_line(usage_class, color) {
-	var line = d3.svg.line()
+        var line = d3.svg.line()
             .x(function (d) { return x(d); })
             .y(function (d) { return y(stats[usage_class][d - start_year]); })
-	g.append("path")
-	    .datum(document_x_values)
+        g.append("path")
+            .datum(document_x_values)
             .style("fill", "none")
             .style("stroke", color)
-	    .style("stroke-width", "2px")
+            .style("stroke-width", "2px")
             .attr("d", line);
     }
     //add_line("c", "black");
@@ -777,31 +777,31 @@ function update_document_stats()
  
     var html = [];
     html.push("<div><b>" + d3.round(stats["c"][current_year - start_year], 1)
-	      + "</b>% of words in the text are in common use in <b>" + current_year + "</b></div>");
+              + "</b>% of words in the text are in common use in <b>" + current_year + "</b></div>");
     html.push("<div><b>" + d3.round(stats["o"][current_year - start_year], 1)
-	      + "</b>% of words are more common <span class='old-word'>earlier</span></div>");
+              + "</b>% of words are more common <span class='old-word'>earlier</span></div>");
     html.push("<div><b>" + d3.round(stats["n"][current_year - start_year], 1)
-	      + "</b>% of words are more common <span class='new-word'>later</span></div>");
+              + "</b>% of words are more common <span class='new-word'>later</span></div>");
     html.push("<div><b>" + d3.round(stats["l"][current_year - start_year], 1)
-	      + "</b>% of words are more common <span class='lapsed-word'>both earlier and later</span></div>");
+              + "</b>% of words are more common <span class='lapsed-word'>both earlier and later</span></div>");
     $("#selected-year-stats").html(html.join(""));
 
     var dict_stats = window.document_dict_stats;
     html = [];
     for (var i = 0; i < dicts.length; i++) {
-	var dict = dicts[i];
-	if (i > 0) {
-	    html.push("<hr />");
-	}
-	html.push("<b>" + d3.round(100.0 - dict_stats["x"][dict], 1)
-		  + "</b>% of words were found in <b>"
-		  + dict_names[dict][0] + "</b>");
-	html.push("<div><b>" + d3.round(dict_stats["x"][dict], 1)
-		  + "</b>% were <span class='omitted-word'>not found</span></div>"); 
-	html.push("<div><b>" + d3.round(dict_stats["o"][dict], 1)
-		  + "</b>% are marked as <span class='obsolete-word'>rare or obsolete</span></div>"); 
-	html.push("<div><b>" + d3.round(dict_stats["v"][dict], 1)
-		  + "</b>% are marked as <span class='vulgar-word'>vulgar, colloquial, or improper</span></div>"); 
+        var dict = dicts[i];
+        if (i > 0) {
+            html.push("<hr />");
+        }
+        html.push("<b>" + d3.round(100.0 - dict_stats["x"][dict], 1)
+                  + "</b>% of words were found in <b>"
+                  + dict_names[dict][0] + "</b>");
+        html.push("<div><b>" + d3.round(dict_stats["x"][dict], 1)
+                  + "</b>% were <span class='omitted-word'>not found</span></div>"); 
+        html.push("<div><b>" + d3.round(dict_stats["o"][dict], 1)
+                  + "</b>% are marked as <span class='obsolete-word'>rare or obsolete</span></div>"); 
+        html.push("<div><b>" + d3.round(dict_stats["v"][dict], 1)
+                  + "</b>% are marked as <span class='vulgar-word'>vulgar, colloquial, or improper</span></div>"); 
     }
     $("#dictionary-stats").html(html.join(""));
 }
@@ -896,9 +896,9 @@ function save_text()
             saved = true;
             update_location();
         }, "json")
-	    .fail(function() {
+            .fail(function() {
             show_save_error_box();
-	    });
+            });
     }
 }
 
@@ -979,14 +979,14 @@ $(window).load(function () {
     window.current_freq = window.initial_freq;
     
     for (var i in dicts) {
-	$('#highlight-option')
+        $('#highlight-option')
             .append($("<option></option>")
-		    .attr("value", "dict-" + dicts[i])
-		    .text("Highlighting words based on " + dict_names[dicts[i]][0])); 
-	dict_names[i];
+                    .attr("value", "dict-" + dicts[i])
+                    .text("Highlighting words based on " + dict_names[dicts[i]][0])); 
+        dict_names[i];
     }
     if (initial_highlight_option) {
-	$("#highlight-option").val(initial_highlight_option);
+        $("#highlight-option").val(initial_highlight_option);
     }
     update_highlight_option();
 
@@ -1022,8 +1022,8 @@ $(window).load(function () {
     $("#text-area,#definition-area,#word-list-area").dblclick(function (e) {
         var word = get_selection();
         show_word_info(word, window.corpus);
-	hide_word_list();
-	hide_stats_box();
+        hide_word_list();
+        hide_stats_box();
     });
     $("#text-area span").on("touchstart", function (e) {
         window.touching_word = true;
@@ -1035,8 +1035,8 @@ $(window).load(function () {
         if (window.touching_word) {
             var word = e.target.textContent;
             show_word_info(word, window.corpus);
-	    hide_word_list();
-	    hide_stats_box();
+            hide_word_list();
+            hide_stats_box();
             return false;
         }
     });
@@ -1047,7 +1047,7 @@ $(window).load(function () {
     $("#highlight-option").change(function (e) {
         update_highlight_option();
         update_location();
-	update_highlighting(true);
+        update_highlighting(true);
     });
     
     $("#highlight-type").change(function (e) {
@@ -1058,15 +1058,15 @@ $(window).load(function () {
         if (e.keyCode == 13) {
             var word = $("#word-lookup").val();
             show_word_info(word, window.corpus);
-	    hide_word_list();
-	    hide_stats_box();
+            hide_word_list();
+            hide_stats_box();
         }
     });
 
     $("#main-area").click(function(e) {
         hide_word_info();
         hide_word_list();
-	hide_stats_box();
+        hide_stats_box();
         hide_help_box();
         hide_save_box();
         hide_save_error_box();
