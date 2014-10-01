@@ -348,16 +348,12 @@ function animate()
             }
         }, 20);
     } else if (window.highlight_option == "freq") {
-        set_freq(0);
+        set_freq(min_freq);
         if (timer) {
             clearInterval(timer);
         }
         timer = setInterval(function() {
-            if (current_freq == 0) {
-                set_freq(min_freq);
-            } else {
-                set_freq(unscale_freq(scale_freq(current_freq) + 1));
-            }
+            set_freq(unscale_freq(scale_freq(current_freq) + 1));
             if (current_freq <= max_freq) {
                 clearInterval(timer);
                 update_location();
