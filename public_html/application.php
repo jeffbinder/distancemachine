@@ -248,12 +248,13 @@ WHERE corpus = ? AND year >= ?");
 function get_counts($word, $corpus)
 {
     global $mysqli;
+    global $data_start_year;
     
     $word = mb_strtolower($word, "UTF-8");
     $counts = [];
     $query = $mysqli->prepare("SELECT year, ntokens FROM count
-WHERE word = ? AND corpus = ?");
-    $query->bind_param('ss', $word, $corpus);
+WHERE word = ? AND corpus = ? AND year >= ?");
+    $query->bind_param('ssi', $word, $corpus, $data_start_year);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($year, $count);
     while ($query->fetch()) {
