@@ -1,3 +1,5 @@
+var slider_width = 300;
+
 function regex_greater_than_helper(n)
 {
     if (n.length == 1) {
@@ -200,11 +202,11 @@ log_min_freq = log10(min_freq);
 log_max_freq = log10(max_freq);
 function scale_freq(freq)
 {
-    return Math.round((log10(freq) - log_min_freq) * 300 / (log_max_freq - log_min_freq));
+    return Math.round((log10(freq) - log_min_freq) * slider_width / (log_max_freq - log_min_freq));
 }
 function unscale_freq(v)
 {
-    return Math.round(Math.pow(10, v * (log_max_freq - log_min_freq) / 300
+    return Math.round(Math.pow(10, v * (log_max_freq - log_min_freq) / slider_width
                                    + log_min_freq));
 }
 
@@ -255,9 +257,9 @@ function update_highlight_option()
         $("#play-button").button("enable");
         $("#slider").slider("enable");
         $("#slider").slider({
-            value: 300,
+            value: slider_width,
             min: 0,
-            max: 300,
+            max: slider_width,
             slide: function(event, ui) {
                 set_freq(unscale_freq(ui.value));
             }
@@ -559,13 +561,13 @@ function compute_document_stats()
         dict_stats["v"][dict] = 0;
     }
     
-    var freq_stats = {"l": new Array(300), "a": 0};
-    for (var i = 0; i <= 300; i++) {
+    var freq_stats = {"l": new Array(slider_width), "a": 0};
+    for (var i = 0; i <= slider_width; i++) {
         freq_stats["l"][i] = 0;
     }
     
-    var unscaled_freqs = new Array(300);
-    for (var i = 0; i <= 300; i++) {
+    var unscaled_freqs = new Array(slider_width);
+    for (var i = 0; i <= slider_width; i++) {
         unscaled_freqs[i] = unscale_freq(i);
     }
 
@@ -647,7 +649,7 @@ function compute_document_stats()
                 if (freq == 0) {
                     freq_stats["a"] += 1;
                 } else {
-                    for (var k = 300; k >= 0; k--) {
+                    for (var k = slider_width; k >= 0; k--) {
                         if (parseInt(freq) <= unscaled_freqs[k]) {
                             break;
                         }
@@ -672,7 +674,7 @@ function compute_document_stats()
         dict_stats["o"][dict] *= scale;
         dict_stats["v"][dict] *= scale;
     }
-    for (var i = 0; i <= 300; i++) {
+    for (var i = 0; i <= slider_width; i++) {
         freq_stats["l"][i] *= scale;
     }
     freq_stats["a"] *= scale;
