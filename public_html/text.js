@@ -223,7 +223,7 @@ function update_slider_value()
         if ($("#slider").slider("value") != scaled_freq) {
             $("#slider").slider("value", scaled_freq);
         }
-        $("#print-header-text").html("Highlighting words with average frequency >= <b>1/" + current_freq + "</b>");
+        $("#print-header-text").html("Highlighting words with average frequency >= <b>1/" + format_freq(current_freq) + "</b>");
     }
 }
 
@@ -449,10 +449,10 @@ function update_word_list()
 
         var words = get_words_with_class("rare-word", true);
         if (words.length == 0) {
-            html.push("No words found with average frequency <b><= " + format_freq(current_freq)
+            html.push("No words found with average frequency <b>&lt;= " + format_freq(current_freq)
                       + "</b>.");
         } else {
-            html.push("Words with average frequency <b><= " + format_freq(current_freq)
+            html.push("Words with average frequency <b>&lt;= " + format_freq(current_freq)
                       + "</b>:<div>");
             html.push(create_word_grid(words, "rare-word"));
             html.push("</div>");
@@ -461,9 +461,9 @@ function update_word_list()
 
         var words = get_words_with_class("absent-word", true);
         if (words.length == 0) {
-            html.push("No words found that were absent from the corpus altogether.");
+            html.push("No words found that were absent from the corpus.");
         } else {
-            html.push("Words that are absent from the corpus altogether:<div>");
+            html.push("Words that are absent from the corpus altogether, " + data_start_year + "-:<div>");
             html.push(create_word_grid(words, "absent-word"));
             html.push("</div>");
         }
@@ -558,6 +558,16 @@ function compute_document_stats()
         dict_stats["o"][dict] = 0;
         dict_stats["v"][dict] = 0;
     }
+    
+    var freq_stats = {"l": new Array(300), "a": 0};
+    for (var i = 0; i <= 300; i++) {
+        freq_stats["l"][i] = 0;
+    }
+    
+    var unscaled_freqs = new Array(300);
+    for (var i = 0; i <= 300; i++) {
+        unscaled_freqs[i] = unscale_freq(i);
+    }
 
     var start = 0, end = window.lines.length - 1;
     for (var i = start; i <= end; i++) {
@@ -632,6 +642,19 @@ function compute_document_stats()
                     }
                 }
             }
+            var freq = child.getAttribute("data-freq");
+            if (freq) {
+                if (freq == 0) {
+                    freq_stats["a"] += 1;
+                } else {
+                    for (var k = 300; k >= 0; k--) {
+                        if (parseInt(freq) <= unscaled_freqs[k]) {
+                            break;
+                        }
+                        freq_stats["l"][k] += 1;
+                    }
+                }
+            }
         }
     }
 
@@ -649,9 +672,14 @@ function compute_document_stats()
         dict_stats["o"][dict] *= scale;
         dict_stats["v"][dict] *= scale;
     }
+    for (var i = 0; i <= 300; i++) {
+        freq_stats["l"][i] *= scale;
+    }
+    freq_stats["a"] *= scale;
 
     window.document_stats = stats;
     window.document_dict_stats = dict_stats;
+    window.document_freq_stats = freq_stats;
 }
 
 function create_document_x_values()
@@ -785,6 +813,16 @@ function update_document_stats()
     html.push("<div><b>" + d3.round(stats["l"][current_year - start_year], 1)
               + "</b>% of words are more common <span class='lapsed-word'>both earlier and later</span></div>");
     $("#selected-year-stats").html(html.join(""));
+
+    var freq_stats = window.document_freq_stats;
+    html = [];
+    html.push("<b>" + d3.round(100.0 - freq_stats["a"], 1)
+              + "</b>% of words were found in the " + corpus_names[corpus] + " corpus");
+    html.push("<div><b>" + d3.round(freq_stats["a"], 1)
+              + "</b>% were <span class='absent-word'>not found</span></div>");
+    html.push("<div><b>" + d3.round(freq_stats["l"][scale_freq(current_freq)], 1)
+              + "</b>% had average frequency <span class='rare-word'>&lt;= " + format_freq(current_freq) + "</span></div>");
+    $("#freq-stats").html(html.join(""));
 
     var dict_stats = window.document_dict_stats;
     html = [];

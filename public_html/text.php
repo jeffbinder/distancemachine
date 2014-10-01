@@ -169,6 +169,8 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     <hr />
     <div id="selected-year-stats"></div>
     <hr />
+    <div id="freq-stats"></div>
+    <hr />
     <div id="dictionary-stats-area">
       <div id="dictionary-stats"></div>
     </div>
