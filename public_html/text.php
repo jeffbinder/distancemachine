@@ -107,7 +107,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     <div>
      <select id="highlight-option">
        <option value="ngrams">Highlighting words that are more common earlier or later than:</option>
-       <option value="freq">Highlighting words with avg frequency below:</option>
+       <option value="freq">Highlighting words with avg frequency less than:</option>
       </select>
     </div>
     <div>
