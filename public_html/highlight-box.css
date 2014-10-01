@@ -22,3 +22,11 @@
     border:2px solid #F0E68C;
     margin: -2px;
 }
+.rare-word {
+    border:2px solid lightBlue;
+    margin: -2px;
+}
+.absent-word {
+    border:2px solid pink;
+    margin: -2px;
+}

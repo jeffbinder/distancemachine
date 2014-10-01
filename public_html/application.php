@@ -340,6 +340,15 @@ function get_dicts_from_cache($word)
     return NULL;
 }
 
+function get_freq_from_cache($word)
+{
+    global $cache_data;
+    if (array_key_exists($word, $cache_data["freq"])) {
+      return $cache_data["freq"][$word];
+    }
+    return NULL;
+}
+
 // Gets the usage period classes that will be applied to a given token.
 function get_classes_for_word($word)
 {
@@ -470,11 +479,40 @@ WHERE headword = ? AND dict = ?");
     return $omitted_dicts . $usage_notes;
 }
 
+// Gets (the reciprocal of) the usage frequency for a word.
+function get_freq_for_word($word)
+{
+    global $mysqli;
+    global $corpus;
+    global $cache_hits;
+
+    $word = strtolower($word);
+
+    if (!is_null($freq = get_freq_from_cache($word, $corpus))) {
+        return $freq;
+    }
+
+    $query = $mysqli->prepare("SELECT SQL_CACHE mean_frequency FROM usage_periods
+WHERE word = ? AND corpus = ?");
+    $query->bind_param('ss', $word, $corpus);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($freq);
+
+    if (!$query->fetch()) {
+        $freq = 0.0;
+    }
+    
+    $query->free_result();
+
+    return $freq;
+}
+
 // Generates the main content of an annotated text, saving it to
 // the tmpdir and updating the database accordingly.
 function gen_annotated_text($id, $text, $title, $corpus, $offline)
 {
   global $max_linelen;
+  global $max_freq;
   
   global $cache_hits;
   global $running;
@@ -564,11 +602,18 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
           && $matches[0][1] == $tokpos) {
         // If the RE matches, the next thing in the string is a "real word."
         $word = $matches[0][0];
-        $classes = get_classes_for_word($word);
-        $dicts = get_dicts_for_word($word);
-        if ($classes != "" || $dicts != "") {
-          $content .= sprintf("<span data-usage='%s' data-dicts='%s'>%s</span>",
-			      $classes, $dicts,
+        $word_quotes_normalized = str_replace("’", "'", $word);
+        $classes = get_classes_for_word($word_quotes_normalized);
+        $dicts = get_dicts_for_word($word_quotes_normalized);
+        $freq = get_freq_for_word($word_quotes_normalized);
+        if ($classes != "" || $dicts != "" || $freq <= 1.0 / $max_freq) {
+            if ($freq == 0) {
+                $inv_freq = 0;
+            } else {
+                $inv_freq = round(1.0 / $freq);
+            }
+          $content .= sprintf("<span data-usage='%s' data-dicts='%s' data-freq='%s'>%s</span>",
+			      $classes, $dicts, $inv_freq,
                               htmlspecialchars($word, ENT_QUOTES));
           $nannotations += 1;
         } else {

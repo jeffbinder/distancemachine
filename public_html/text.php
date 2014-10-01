@@ -11,6 +11,7 @@ mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
     $initial_year = $end_year;
+    $initial_freq = $max_freq;
     $initial_highlight_option = null;
 } else {
     $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
@@ -20,11 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     } else {
         $initial_year = (int)$initial_year;
     }
-    $initial_highlight_option = null;
-    $initial_dict = filter_input(INPUT_GET, 'd', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-    if ($initial_dict) {
-        validate_dict($initial_dict);
-        $initial_highlight_option = 'dict-' . $initial_dict;
+    $initial_freq = filter_input(INPUT_GET, 'f', FILTER_SANITIZE_NUMBER_INT);
+    if (is_null($initial_freq)) {
+        $initial_freq = $max_freq;
+    } else {
+        $initial_freq = (int)$initial_freq;
+    }
+    $initial_highlight_option = filter_input(INPUT_GET, 'd', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+    if ($initial_highlight_option && $initial_highlight_option != "freq") {
+        validate_dict($initial_highlight_option);
+        $initial_highlight_option = 'dict-' . $initial_highlight_option;
     }
 }
 
@@ -76,6 +82,7 @@ $content = $data['content'];
 
 echo "id = " . json_encode($id) . ";\n";
 echo "initial_year = " . json_encode($initial_year) . ";\n";
+echo "initial_freq = " . json_encode($initial_freq) . ";\n";
 echo "initial_highlight_option = " . json_encode($initial_highlight_option) . ";\n";
 echo "corpus = " . json_encode($corpus) . ";\n";
 echo "title = " . json_encode($title) . ";\n";
@@ -99,11 +106,12 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
    <div id="option-area" style="float:left">
     <div>
      <select id="highlight-option">
-       <option value="ngrams">Highlighting words that are uncommon in the selected year</option>
+       <option value="ngrams">Highlighting words that are more common earlier or later than:</option>
+       <option value="freq">Highlighting words with avg frequency below:</option>
       </select>
     </div>
     <div>
-     <div id="selected-year-area" style="float:right"><span class="selected-year"></span></div>
+     <div id="slider-value-area" style="float:right"><span class="slider-value"></span></div>
      <div id="slider" style="float:right"></div>
      <div style="float:right"><button id="play-button"></button></div>
     </div>
@@ -185,6 +193,10 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
      <div><span class="old-word">blue</span> words are more common earlier</div>
      <div><span class="new-word">red</span> words are more common later</div>
      <div><span class="lapsed-word">yellow</span> words are more common both earlier and later</div>
+    </div>
+    <div class="key" id="freq-key" style="clear:both">
+     <div><span class="rare-word">blue</span> words have average frequency below the selected value</div>
+     <div><span class="absent-word">red</span> words are not found in Google Books at all</div>
     </div>
     <div class="key" id="dict-key" style="clear:both">
      <div><span class="omitted-word">red</span> words are omitted from the selected dictionary</div>

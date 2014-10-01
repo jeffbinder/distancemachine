@@ -1,3 +1,53 @@
+function regex_greater_than_helper(n)
+{
+    if (n.length == 1) {
+        if (n < 8) {
+            return "[" + (parseInt(n) + 1) + "-9]";
+        } else if (n == 8) {
+            return "9"
+        }
+        return "";
+    }
+    var re = [];
+    var lsd = parseInt(n[0])
+    if (lsd < 9) {
+        var higher_lsd;
+        if (lsd < 8) {
+            higher_lsd = "[" + (lsd + 1) + "-9]";
+        } else if (lsd == 8) {
+            higher_lsd = "9"
+        }
+        re.push(higher_lsd + "[0-9]{" + (n.length - 1) + "}");
+    }
+    var higher_rest = regex_greater_than_helper(n.substr(1));
+    if (higher_rest) {
+        re.push(lsd + "(" + higher_rest + ")");
+    }
+    if (re.length == 0) {
+        return "";
+    } else {
+        return re.join("|");
+    }
+}
+
+// Creates a regex matching all integers greater than or equal to the specified integer.
+function regex_greater_than(n)
+{
+    n = n + "";
+    var re = regex_greater_than_helper(n);
+    if (re) {
+        re += "|";
+    }
+    re += "[1-9][0-9]{" + n.length + "}[0-9]*";
+    return "^" + re + "$";
+}
+
+window.loge10 = Math.log(10.0);
+function log10(x)
+{
+    return Math.log(x) / loge10;
+}
+
 // Update the highlighting in the specified lines.  By default, this only updates lines
 // that just came into view.  If refresh = true, it updates all visible lines.  If
 // whole_document = true, it updates everything.
@@ -35,77 +85,101 @@ function update_highlighting(refresh, whole_document)
     }
 
     if (window.highlight_option == "ngrams") {
-	// Construct a regex to match words that are out of use in the selected year.
-	var dec = ~~(year / 10);
-	var cent = ~~(year / 100);
-	var re = "[oln]" + cent + "(xx|" + (dec - cent * 10) + "(" + (year - dec * 10) + "|x";
-	if (year < dec * 10 + 5) {
+        // Construct a regex to match words that are out of use in the selected year.
+        var dec = ~~(year / 10);
+        var cent = ~~(year / 100);
+        var re = "[oln]" + cent + "(xx|" + (dec - cent * 10) + "(" + (year - dec * 10) + "|x";
+        if (year < dec * 10 + 5) {
             re += "|l)";
-	} else {
+        } else {
             re += "|r)";
-	}
-	if (year < cent * 100 + 50) {
+        }
+        if (year < cent * 100 + 50) {
             re += "|lx)";
-	} else {
+        } else {
             re += "|rx)";
-	}
-	re = new RegExp(re);
-	
-	for (var i = start; i <= end; i++) {
+        }
+        re = new RegExp(re);
+        
+        for (var i = start; i <= end; i++) {
             var line = lines[i];
             var children = line.getElementsByTagName("span");
             var nchildren = children.length;
             for (var j = 0; j < nchildren; j++) {
-		var child = children[j];
-		var usage = child.getAttribute("data-usage");
-		
-		if (usage) {
+                var child = children[j];
+                var usage = child.getAttribute("data-usage");
+                
+                if (usage) {
                     var matches = usage.match(re);
                     if (matches) {
-			if (matches[0][0] == "o") {
+                        if (matches[0][0] == "o") {
                             child.className = "old-word";
                             continue;
-			}
-			if (matches[0][0] == "l") {
+                        }
+                        if (matches[0][0] == "l") {
                             child.className = "lapsed-word";
                             continue;
-			}
-			if (matches[0][0] == "n") {
+                        }
+                        if (matches[0][0] == "n") {
                             child.className = "new-word";
                             continue;
-			}
+                        }
                     }
-		}
+                }
                 child.className = "";
             }
-	}
+        }
 
+    } else if (window.highlight_option == "freq") {
+        
+        // 0 indicates a word that is never used.
+        var re = new RegExp(regex_greater_than(window.current_freq));
+        for (var i = start; i <= end; i++) {
+            var line = lines[i];
+            var children = line.getElementsByTagName("span");
+            var nchildren = children.length;
+            for (var j = 0; j < nchildren; j++) {
+                var child = children[j];
+                var freq = child.getAttribute("data-freq");
+                if (freq) {
+                    if (freq == "0") {
+                        child.className = "absent-word";
+                        continue;
+                    } else if (freq.match(re)) {
+                        child.className = "rare-word";
+                        continue;
+                    }
+                }
+                child.className = "";
+            }
+        }
+        
     } else if (window.highlight_option.indexOf("dict-") == 0) {
         
         var dict = window.highlight_option.substring(5);
-	for (var i = start; i <= end; i++) {
+        for (var i = start; i <= end; i++) {
             var line = lines[i];
             var children = line.getElementsByTagName("span");
             var nchildren = children.length;
             for (var j = 0; j < nchildren; j++) {
-		var child = children[j];
-		var dicts = child.getAttribute("data-dicts");
-		
-		if (dicts) {
+                var child = children[j];
+                var dicts = child.getAttribute("data-dicts");
+                
+                if (dicts) {
                     if (dicts.indexOf("x" + dict) > -1) {
                         child.className = "omitted-word";
                         continue;
-		    } else if (dicts.indexOf("o" + dict) > -1) {
+                    } else if (dicts.indexOf("o" + dict) > -1) {
                         child.className = "obsolete-word";
                         continue;
-		    } else if (dicts.indexOf("v" + dict) > -1) {
+                    } else if (dicts.indexOf("v" + dict) > -1) {
                         child.className = "vulgar-word";
                         continue;
-		    }
-		}
+                    }
+                }
                 child.className = "";
             }
-	}
+        }
     }
 }
 
@@ -122,64 +196,175 @@ function update_highlight_type()
     }
 }
 
+log_min_freq = log10(min_freq);
+log_max_freq = log10(max_freq);
+function scale_freq(freq)
+{
+    return Math.round((log10(freq) - log_min_freq) * 300 / (log_max_freq - log_min_freq));
+}
+function unscale_freq(v)
+{
+    return Math.round(Math.pow(10, v * (log_max_freq - log_min_freq) / 300
+                                   + log_min_freq));
+}
+function format_freq(freq)
+{
+    if (freq == 0) {
+        return "0";
+    } else if (freq >= 1000000000000) {
+        return "1 / " + +(freq / 1000000000000).toFixed(2) + "T";
+    } else if (freq >= 100000000000) {
+        return "1 / " + +(freq / 1000000000).toFixed(0) + "B";
+    } else if (freq >= 10000000000) {
+        return "1 / " + +(freq / 1000000000).toFixed(1) + "B";
+    } else if (freq >= 1000000000) {
+        return "1 / " + +(freq / 1000000000).toFixed(2) + "B";
+    } else if (freq >= 100000000) {
+        return "1 / " + +(freq / 1000000).toFixed(0) + "M";
+    } else if (freq >= 10000000) {
+        return "1 / " + +(freq / 1000000).toFixed(1) + "M";
+    } else if (freq >= 1000000) {
+        return "1 / " + +(freq / 1000000).toFixed(2) + "M";
+    } else if (freq >= 100000) {
+        return "1 / " + +(freq / 1000).toFixed(0) + "K";
+    } else if (freq >= 10000) {
+        return "1 / " + +(freq / 1000).toFixed(1) + "K";
+    } else if (freq >= 1000) {
+        return "1 / " + +(freq / 1000).toFixed(2) + "K";
+    }
+}
+
+function update_slider_value()
+{
+    if (window.highlight_option == "ngrams") {
+        $(".selected-year").text(current_year);
+        $(".slider-value").text(current_year);
+        if ($("#slider").slider("value") != current_year) {
+            $("#slider").slider("value", current_year);
+        }
+        $("#print-header-text").html("Highlighting words uncommon in: <b>" + current_year + "</b>");
+    } else if (window.highlight_option == "freq") {
+        $(".slider-value").text(format_freq(current_freq));
+        var scaled_freq = scale_freq(current_freq);
+        if ($("#slider").slider("value") != scaled_freq) {
+            $("#slider").slider("value", scaled_freq);
+        }
+        $("#print-header-text").html("Highlighting words with average frequency >= <b>1/" + current_freq + "</b>");
+    }
+}
+
 function update_highlight_option()
 {
     window.highlight_option = $("#highlight-option").val();
     if (!window.highlight_option) {
-	window.highlight_option = "ngrams";
+        window.highlight_option = "ngrams";
     }
     if (window.highlight_option == "ngrams") {
-	$("#ngrams-key").css("display", "default");
-	$("#dict-key").css("display", "none");
-	$("#play-button").button("enable");
-	$("#slider").slider("enable");
-	$(".selected-year").css("color", "black");
-	$("#print-header-text").html("Highlighting words uncommon in: <b>" + current_year + "</b>");
+        $("#ngrams-key").css("display", "default");
+        $("#freq-key").css("display", "none");
+        $("#dict-key").css("display", "none");
+        $("#play-button").button("enable");
+        $("#slider").slider("enable");
+        $("#slider").slider({
+            value: end_year,
+            min: start_year,
+            max: end_year,
+            slide: function(event, ui) {
+                set_year(parseInt(ui.value));
+            }
+        });
+        $("#slider-value-area").css("color", "black");
+    } else if (window.highlight_option == "freq") {
+        $("#ngrams-key").css("display", "none");
+        $("#freq-key").css("display", "default");
+        $("#dict-key").css("display", "none");
+        $("#play-button").button("enable");
+        $("#slider").slider("enable");
+        $("#slider").slider({
+            value: 300,
+            min: 0,
+            max: 300,
+            slide: function(event, ui) {
+                set_freq(unscale_freq(ui.value));
+            }
+        });
+        $("#slider-value-area").css("color", "black");
     } else {
         var dict = window.highlight_option.substring(5);
-	$("#ngrams-key").css("display", "none");
-	$("#dict-key").css("display", "default");
-	$("#play-button").button("disable");
-	$("#slider").slider("disable");
-	$("#selected-year-area").css("color", "grey");
-	$("#print-header-text").html("Highlighting words based on <b>" + dict_names[dict][1] + "</b>");
+        $("#ngrams-key").css("display", "none");
+        $("#freq-key").css("display", "none");
+        $("#dict-key").css("display", "default");
+        $("#play-button").button("disable");
+        $("#slider").slider("disable");
+        $("#slider-value-area").css("color", "grey");
+        $("#print-header-text").html("Highlighting words based on <b>" + dict_names[dict][1] + "</b>");
     }
+    update_slider_value();
     if (window.word_list_visible) {
-	update_word_list();
+        update_word_list();
     }
 }
 
 // Change the stored year and update highlighting accordingly.
 function set_year(year)
 {
-    $(".selected-year").text(year);
-    if ($("#slider").slider("value") != year) {
-        $("#slider").slider("value", year);
-    }
     window.current_year = year;
+    update_slider_value();
     update_highlighting(true);
     if (window.word_list_visible) {
-	update_word_list();
+        update_word_list();
     }
     if (window.stats_box_visible) {
-	update_document_stats();
+        update_document_stats();
+    }
+}
+
+function set_freq(freq)
+{
+    window.current_freq = freq;
+    update_slider_value();
+    update_highlighting(true);
+    if (window.word_list_visible) {
+        update_word_list();
+    }
+    if (window.stats_box_visible) {
+        update_document_stats();
     }
 }
 
 function animate()
 {
-    set_year(start_year);
-    if (timer) {
-        clearInterval(timer);
-    }
-    timer = setInterval(function() {
-        set_year(current_year + 1);
-        if (current_year >= end_year) {
+    if (window.highlight_option == "ngrams") {
+        set_year(start_year);
+        if (timer) {
             clearInterval(timer);
-            update_location();
-            return;
         }
-    }, 20);
+        timer = setInterval(function() {
+            set_year(current_year + 1);
+            if (current_year >= end_year) {
+                clearInterval(timer);
+                update_location();
+                return;
+            }
+        }, 20);
+    } else if (window.highlight_option == "freq") {
+        set_freq(0);
+        if (timer) {
+            clearInterval(timer);
+        }
+        timer = setInterval(function() {
+            if (current_freq == 0) {
+                set_freq(min_freq);
+            } else {
+                set_freq(unscale_freq(scale_freq(current_freq) + 1));
+            }
+            if (current_freq <= max_freq) {
+                clearInterval(timer);
+                update_location();
+                return;
+            }
+        }, 20);
+    }
 }
 
 // Check for a change in line visibility and update the highlighting
@@ -215,15 +400,19 @@ function update_word_info_height()
     $("#definition-area").css("max-height", h - 383 - 115 - 24);
 }
 
-function get_words_with_class(css_class)
+function get_words_with_class(css_class, filter_apostrophes)
 {
     var d = {};
     $("#text-area ." + css_class).each(function (i, e) {
-	d[$(e).text().toLowerCase()] = 1;
+        d[$(e).text().toLowerCase()] = 1;
     });
     var words = [];
     for (var word in d) {
-	words.push(word);
+        if (filter_apostrophes && word.indexOf("'") >= 0) {
+            continue;
+        }
+        word = word.replace("&", "&amp;");
+        words.push(word);
     }
     return words.sort();
 }
@@ -242,10 +431,12 @@ function update_word_list()
 {
     var option_text;
     if (window.highlight_option == "ngrams") {
-	option_text = "The following words were marked as uncommon in <b>" + window.current_year + "</b>.";
+        option_text = "The following words were marked as more common earlier or later than <b>" + window.current_year + "</b>.";
+    } else if (window.highlight_option == "freq") {
+        option_text = "The following words were marked as rare in the " + corpus_names[corpus] + " corpus (excluding words with apostrophes).";
     } else {
         var dict = window.highlight_option.substring(5);
-	option_text = "The following words were highlighted based on <b>" + dict_names[dict][1] + "</b>.";
+        option_text = "The following words were highlighted based on <b>" + dict_names[dict][1] + "</b>.";
     }
     $("#word-list-option-text").html(option_text);
 
@@ -254,65 +445,88 @@ function update_word_list()
     update_highlighting(true, true);
     if (window.highlight_option == "ngrams") {
 
-	var words = get_words_with_class("old-word");
-	if (words.length == 0) {
-	    html.push("No words found that were more common earlier.");
-	} else {
-	    html.push("Words that were more common earlier:<div>");
-	    html.push(create_word_grid(words, "old-word"));
-	    html.push("</div>");
-	}
-	html.push("<hr />");
+        var words = get_words_with_class("old-word");
+        if (words.length == 0) {
+            html.push("No words found that were more common earlier.");
+        } else {
+            html.push("Words that were more common earlier:<div>");
+            html.push(create_word_grid(words, "old-word"));
+            html.push("</div>");
+        }
+        html.push("<hr />");
 
-	words = get_words_with_class("new-word");
-	if (words.length == 0) {
-	    html.push("<div>No words found that were more common later.</div>");
-	} else {
-	    html.push("<div>Words that were more common later:</div><div>");
-	    html.push(create_word_grid(words, "new-word"));
-	    html.push("</div>");
-	}
-	html.push("<hr />");
+        words = get_words_with_class("new-word");
+        if (words.length == 0) {
+            html.push("<div>No words found that were more common later.</div>");
+        } else {
+            html.push("<div>Words that were more common later:</div><div>");
+            html.push(create_word_grid(words, "new-word"));
+            html.push("</div>");
+        }
+        html.push("<hr />");
 
-	words = get_words_with_class("lapsed-word");
-	if (words.length == 0) {
-	    html.push("<div>No words found that were more common both earlier and later.</div>");
-	} else {
-	    html.push("<div>Words that were more common both earlier and later:</div><div>");
-	    html.push(create_word_grid(words, "lapsed-word"));
-	    html.push("</div>");
-	}
+        words = get_words_with_class("lapsed-word");
+        if (words.length == 0) {
+            html.push("<div>No words found that were more common both earlier and later.</div>");
+        } else {
+            html.push("<div>Words that were more common both earlier and later:</div><div>");
+            html.push(create_word_grid(words, "lapsed-word"));
+            html.push("</div>");
+        }
+
+    } else if (window.highlight_option == "freq") {
+
+        var words = get_words_with_class("rare-word", true);
+        if (words.length == 0) {
+            html.push("No words found with average frequency <b><= " + format_freq(current_freq)
+                      + "</b>.");
+        } else {
+            html.push("Words with average frequency <b><= " + format_freq(current_freq)
+                      + "</b>:<div>");
+            html.push(create_word_grid(words, "rare-word"));
+            html.push("</div>");
+        }
+        html.push("<hr />");
+
+        var words = get_words_with_class("absent-word", true);
+        if (words.length == 0) {
+            html.push("No words found that were absent from the corpus altogether.");
+        } else {
+            html.push("Words that are absent from the corpus altogether:<div>");
+            html.push(create_word_grid(words, "absent-word"));
+            html.push("</div>");
+        }
 
     } else {
 
-	words = get_words_with_class("obsolete-word");
-	if (words.length == 0) {
-	    html.push("No words found that were marked as rare or obsolete in the dictionary.");
-	} else {
-	    html.push("Words that are marked as rare or obsolete in the dictionary:<div>");
-	    html.push(create_word_grid(words, "obsolete-word"));
-	    html.push("</div>");
-	}
-	html.push("<hr />");
+        words = get_words_with_class("obsolete-word");
+        if (words.length == 0) {
+            html.push("No words found that were marked as rare or obsolete in the dictionary.");
+        } else {
+            html.push("Words that are marked as rare or obsolete in the dictionary:<div>");
+            html.push(create_word_grid(words, "obsolete-word"));
+            html.push("</div>");
+        }
+        html.push("<hr />");
 
-	words = get_words_with_class("vulgar-word");
-	if (words.length == 0) {
-	    html.push("<div>No words found that were marked as vulgar, colloquial, or improper in the dictionary.</div>");
-	} else {
-	    html.push("<div>Words that were marked as vulgar, colloquial, or improper in the dictionary:</div><div>");
-	    html.push(create_word_grid(words, "vulgar-word"));
-	    html.push("</div>");
-	}
-	html.push("<hr />");
+        words = get_words_with_class("vulgar-word");
+        if (words.length == 0) {
+            html.push("<div>No words found that were marked as vulgar, colloquial, or improper in the dictionary.</div>");
+        } else {
+            html.push("<div>Words that were marked as vulgar, colloquial, or improper in the dictionary:</div><div>");
+            html.push(create_word_grid(words, "vulgar-word"));
+            html.push("</div>");
+        }
+        html.push("<hr />");
 
-	var words = get_words_with_class("omitted-word");
-	if (words.length == 0) {
-	    html.push("<div>All words in the text were found in the dictionary.</div>");
-	} else {
-	    html.push("<div>Words that were not found in the dictionary:</div><div>");
-	    html.push(create_word_grid(words, "omitted-word"));
-	    html.push("</div>");
-	}
+        var words = get_words_with_class("omitted-word");
+        if (words.length == 0) {
+            html.push("<div>All words in the text were found in the dictionary.</div>");
+        } else {
+            html.push("<div>Words that were not found in the dictionary:</div><div>");
+            html.push(create_word_grid(words, "omitted-word"));
+            html.push("</div>");
+        }
         
     }
 
@@ -342,7 +556,7 @@ function update_word_list_height()
 {
     var h = window.innerHeight;
     $("#word-list-area").css("max-height", h - 33
-			     - $("#word-list-option-text").height()
+        		     - $("#word-list-option-text").height()
 			     - 115 - 24);
 }
 
@@ -657,9 +871,11 @@ function get_base_url()
 {
     var highlight_option_str = "";
     if (window.highlight_option.indexOf("dict-") == 0) {
-	highlight_option_str = "&d=" + window.highlight_option.substring(5);
+        highlight_option_str = "&d=" + window.highlight_option.substring(5);
+    } else if (window.highlight_option == "freq") {
+        highlight_option_str = "&d=freq";
     }
-    return "/text/" + id + "?y=" + current_year + highlight_option_str;
+    return "/text/" + id + "?y=" + current_year + "&f=" + current_freq + highlight_option_str;
 }
 
 function get_url()
@@ -773,9 +989,6 @@ $(window).load(function () {
         value: end_year,
         min: start_year,
         max: end_year,
-        slide: function(event, ui) {
-            set_year(parseInt(ui.value));
-        },
         stop: function(event, ui) {
             update_location();
         }
@@ -790,6 +1003,9 @@ $(window).load(function () {
     .click(function (e) {
         animate();
     });
+    
+    window.current_year = window.initial_year;
+    window.current_freq = window.initial_freq;
     
     for (var i in dicts) {
 	$('#highlight-option')
@@ -854,7 +1070,8 @@ $(window).load(function () {
         }
     });
 
-    set_year(initial_year);
+    set_year(current_year);
+    set_freq(current_freq);
     
     $("#highlight-option").change(function (e) {
         update_highlight_option();

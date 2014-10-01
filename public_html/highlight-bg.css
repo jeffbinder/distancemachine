@@ -17,6 +17,12 @@
     .vulgar-word {
         background-color: #F0E68C;
     }
+    .rare-word {
+        background-color: lightBlue;
+    }
+    .absent-word {
+        background-color: pink;
+    }
 }
 
 @media print {
@@ -42,6 +48,14 @@
     }
     .vulgar-word {
         border:2px solid #F0E68C;
+        margin: -2px;
+    }
+    .rare-word {
+        border:2px solid lightBlue;
+        margin: -2px;
+    }
+    .absent-word {
+        border:2px solid pink;
         margin: -2px;
     }
 }

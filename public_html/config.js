@@ -2,6 +2,8 @@ window.start_year = 1800;
 window.end_year = new Date().getFullYear();
 window.data_start_year = 1750;
 window.data_end_year = 2009;
+window.min_freq = 10000000000;
+window.max_freq = 1000000;
 
 window.current_year = 1985;
 window.first_line_visible = -1;

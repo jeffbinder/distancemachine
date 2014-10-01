@@ -10,15 +10,10 @@ function create_x_values()
     }
 }
 
-function update_word_usage_chart(word, corpus, data)
+function compute_word_usage_stats(word, corpus, data)
 {
-    var counts = data['counts'],
-        periods = data['periods'];
-
-    if (!window.x_values) {
-        create_x_values();
-    }
-
+    var counts = data['counts'];
+    
     var max = 0, total = 0;
     for (var x = data_start_year; x <= data_end_year; x++) {
         var y = (counts[x] || 0) / totals[corpus][x];
@@ -27,7 +22,24 @@ function update_word_usage_chart(word, corpus, data)
         }
         total += y;
     }
-    avg = total / (data_end_year - data_start_year + 1);
+    var avg = total / (data_end_year - data_start_year + 1);
+    
+    data['avg'] = avg;
+    data['max'] = max;
+    data['total'] = total;
+}
+
+function update_word_usage_chart(word, corpus, data)
+{
+    var counts = data['counts'],
+        periods = data['periods'],
+        avg = data['avg'],
+        max = data['max'],
+        total = data['total'];
+
+    if (!window.x_values) {
+        create_x_values();
+    }
     
     $("#word-usage-chart").html("");
 
@@ -312,6 +324,7 @@ function show_word_info(word, corpus)
     var request_id = last_request_id;
     $.getJSON("wordinfo.php", {"word": word, "corpus": corpus}, function(data) {
         if (request_id == last_request_id) {
+            compute_word_usage_stats(word, corpus, data);
             update_word_usage_text(word, data);
             update_word_usage_chart(word, corpus, data);
             update_word_definitions(word, corpus, data);

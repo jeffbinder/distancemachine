@@ -51,7 +51,6 @@ $mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
 mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
 $ngrams_data = array();
-$dict_data = array();
 foreach ($corpora as $corpus) {
   $ngrams_data[$corpus] = array();
 }
@@ -69,15 +68,24 @@ foreach ($words as $word) {
   }
 }
 
-$cache_data = array("dict" => array());
+// Needed to get get_dicts_for_word and get_freq_for_word to work right.
+$cache_data = array("dict" => array(), "freq" => array());
+
+$dict_data = array();
 foreach ($words as $word) {
   $omitted_dicts = get_dicts_for_word($word);
   $dict_data[$word] = $omitted_dicts;
 }
 
+$freq_data = array();
+foreach ($words as $word) {
+  $freq = get_freq_for_word($word);
+  $freq_data[$word] = $freq;
+}
+
 mysqli_close($mysqli);
 
-$data = ["ngrams" => $ngrams_data, "dict" => $dict_data];
+$data = ["ngrams" => $ngrams_data, "dict" => $dict_data, "freq" => $freq_data];
 $data = json_encode($data);
 file_put_contents("CACHE", $data)
 

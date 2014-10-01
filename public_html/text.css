@@ -47,10 +47,17 @@
 #slider .ui-slider-handle {
 }
 
-#selected-year-area {
+#slider-value-area {
+    width: 32px;
     position: relative;
     top: 9px;
     left: 2px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.slider-value {
+    font-weight: bold;
 }
 
 .selected-year {

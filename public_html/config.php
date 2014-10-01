@@ -6,6 +6,7 @@ $start_year = 1800;
 $end_year = (int)date("Y");
 $data_start_year = 1750;
 $data_end_year = 2009;
+$max_freq = 1000000;
 $max_linelen = 80;
 $savedir = '/var/savedtexts/';
 $tmpdir = '/var/unsavedtexts/';
