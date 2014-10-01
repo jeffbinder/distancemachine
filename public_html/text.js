@@ -207,32 +207,6 @@ function unscale_freq(v)
     return Math.round(Math.pow(10, v * (log_max_freq - log_min_freq) / 300
                                    + log_min_freq));
 }
-function format_freq(freq)
-{
-    if (freq == 0) {
-        return "0";
-    } else if (freq >= 1000000000000) {
-        return "1 / " + +(freq / 1000000000000).toFixed(2) + "T";
-    } else if (freq >= 100000000000) {
-        return "1 / " + +(freq / 1000000000).toFixed(0) + "B";
-    } else if (freq >= 10000000000) {
-        return "1 / " + +(freq / 1000000000).toFixed(1) + "B";
-    } else if (freq >= 1000000000) {
-        return "1 / " + +(freq / 1000000000).toFixed(2) + "B";
-    } else if (freq >= 100000000) {
-        return "1 / " + +(freq / 1000000).toFixed(0) + "M";
-    } else if (freq >= 10000000) {
-        return "1 / " + +(freq / 1000000).toFixed(1) + "M";
-    } else if (freq >= 1000000) {
-        return "1 / " + +(freq / 1000000).toFixed(2) + "M";
-    } else if (freq >= 100000) {
-        return "1 / " + +(freq / 1000).toFixed(0) + "K";
-    } else if (freq >= 10000) {
-        return "1 / " + +(freq / 1000).toFixed(1) + "K";
-    } else if (freq >= 1000) {
-        return "1 / " + +(freq / 1000).toFixed(2) + "K";
-    }
-}
 
 function update_slider_value()
 {
@@ -393,7 +367,8 @@ function update_visibility()
 function update_word_info_height()
 {
     var h = window.innerHeight;
-    $("#definition-area").css("max-height", h - 383 - 115 - 24);
+    $("#definition-area").css("max-height", h - 368
+                       - $("#usage-periods-text").height() - 115 - 24);
 }
 
 function get_words_with_class(css_class, filter_apostrophes)

@@ -1,3 +1,36 @@
+function format_freq(freq)
+{
+    if (freq == 0) {
+        return "0";
+    } else if (freq >= 1000000000000) {
+        return "1 / " + +(freq / 1000000000000).toFixed(2) + "T";
+    } else if (freq >= 100000000000) {
+        return "1 / " + +(freq / 1000000000).toFixed(0) + "B";
+    } else if (freq >= 10000000000) {
+        return "1 / " + +(freq / 1000000000).toFixed(1) + "B";
+    } else if (freq >= 1000000000) {
+        return "1 / " + +(freq / 1000000000).toFixed(2) + "B";
+    } else if (freq >= 100000000) {
+        return "1 / " + +(freq / 1000000).toFixed(0) + "M";
+    } else if (freq >= 10000000) {
+        return "1 / " + +(freq / 1000000).toFixed(1) + "M";
+    } else if (freq >= 1000000) {
+        return "1 / " + +(freq / 1000000).toFixed(2) + "M";
+    } else if (freq >= 100000) {
+        return "1 / " + +(freq / 1000).toFixed(0) + "K";
+    } else if (freq >= 10000) {
+        return "1 / " + +(freq / 1000).toFixed(1) + "K";
+    } else if (freq >= 1000) {
+        return "1 / " + +(freq / 1000).toFixed(2) + "K";
+    } else if (freq >= 100) {
+        return "1 / " + +freq.toFixed(0);
+    } else if (freq >= 10) {
+        return "1 / " + +freq.toFixed(1);
+    } else if (freq >= 1) {
+        return "1 / " + +freq.toFixed(2);
+    }
+}
+
 function create_x_values()
 {
     window.x_values = [];
@@ -183,50 +216,54 @@ function update_word_usage_chart(word, corpus, data)
 function update_word_usage_text(word, data)
 {
     var periods = data['periods'],
+        avg = data['avg'],
         html = [];
     
     if (periods.length == 0) {
         html.push("No usage data available for this word");
-    } else if (periods.length == 1) {
-        if (periods[0][0] == data_start_year && !periods[0][1]) {
-            html.push("Used frequently through the whole period covered");
-        } else {
+    } else {
+        html.push("Avg freq <b>" + format_freq(1.0 / avg) + "</b>. ");
+        if (periods.length == 1) {
+            if (periods[0][0] == data_start_year && !periods[0][1]) {
+                html.push("In consistent use through the whole period covered");
+            } else {
+                html.push("Most frequently used from ");
+                html.push("<span class='usage-period-text'>");
+                html.push(periods[0][0]);
+                html.push("-");
+                html.push(periods[0][1]);
+                html.push("</span>");
+            }
+        } else if (periods.length == 2) {
             html.push("Most frequently used from ");
             html.push("<span class='usage-period-text'>");
             html.push(periods[0][0]);
             html.push("-");
             html.push(periods[0][1]);
             html.push("</span>");
-        }
-    } else if (periods.length == 2) {
-        html.push("Most frequently used from ");
-        html.push("<span class='usage-period-text'>");
-        html.push(periods[0][0]);
-        html.push("-");
-        html.push(periods[0][1]);
-        html.push("</span>");
-        html.push(" and from ");
-        html.push("<span class='usage-period-text'>");
-        html.push(periods[1][0]);
-        html.push("-");
-        html.push(periods[1][1]);
-        html.push("</span>");
-    } else {
-        html.push("Most frequently used from ");
-        for (var i in periods) {
+            html.push(" and from ");
             html.push("<span class='usage-period-text'>");
-            html.push(periods[i][0]);
+            html.push(periods[1][0]);
             html.push("-");
-            html.push(periods[i][1]);
+            html.push(periods[1][1]);
             html.push("</span>");
-            if (i == periods.length - 2) {
-                html.push(", and ");
-            } else {
-                html.push(", ");
+        } else {
+            html.push("Most frequently used from ");
+            for (var i in periods) {
+                html.push("<span class='usage-period-text'>");
+                html.push(periods[i][0]);
+                html.push("-");
+                html.push(periods[i][1]);
+                html.push("</span>");
+                if (i == periods.length - 2) {
+                    html.push(", and ");
+                } else {
+                    html.push(", ");
+                }
             }
         }
+        html.push(".");
     }
-    html.push(".");
     
     $("#usage-periods-text").html(html.join(''));
 }
@@ -328,6 +365,9 @@ function show_word_info(word, corpus)
             update_word_usage_text(word, data);
             update_word_usage_chart(word, corpus, data);
             update_word_definitions(word, corpus, data);
+            if (update_word_info_height) {
+                update_word_info_height();
+            }
         }
     })
     .fail(function () {
