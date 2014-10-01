@@ -463,9 +463,9 @@ function update_word_list()
 
         var words = get_words_with_class("absent-word", true);
         if (words.length == 0) {
-            html.push("No words found that were absent from the corpus.");
+            html.push("No words found that were absent from the corpus " + data_start_year + "-.");
         } else {
-            html.push("Words that are absent from the corpus altogether, " + data_start_year + "-:<div>");
+            html.push("Words that are absent from the corpus altogether (" + data_start_year + "-):<div>");
             html.push(create_word_grid(words, "absent-word"));
             html.push("</div>");
         }
