@@ -220,7 +220,7 @@ function update_word_usage_text(word, data)
         html = [];
     
     if (periods.length == 0) {
-        html.push("No usage data available for this word");
+        html.push("No usage data available for this word.");
     } else {
         html.push("Avg freq <b>" + format_freq(1.0 / avg) + "</b>. ");
         if (periods.length == 1) {
