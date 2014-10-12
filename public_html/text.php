@@ -161,6 +161,12 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     <hr />
     <div id="definition-area"><span id="definitions"></span></div>
   </div>
+  <div id="reverse-lookup-box">
+    <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
+    <div id="reverse-lookup-text"></div>
+    <hr />
+    <div id="reverse-lookup-word-area"><span id="reverse-lookup-words"></span></div>
+  </div>
   <div id="stats-box">
     <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
     <div>Word usage statistics for &ldquo;<span class="document-title"></span>&rdquo;</div>

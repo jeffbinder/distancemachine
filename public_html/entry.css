@@ -68,3 +68,25 @@ textarea {
     border: 1px solid #c5b390;
     display: none;
 }
+
+#reverse-lookup-box {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    margin-left: -210px;
+    width: 420px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+}
+
+.back-button {
+    position: absolute;
+    left: -68px;
+    width: 38px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+}

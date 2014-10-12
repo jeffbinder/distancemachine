@@ -25,6 +25,7 @@
   <title>The Distance Machine</title>
  </head>
  <body>
+ <div id="main-area">
   <div class="title-area">
    <div class="title">
     The Distance Machine
@@ -77,6 +78,7 @@
    <div style="float:right"><a href="http://newmedialab.cuny.edu/people/jeffrey-binder/">About me</a> | <a href="http://github.com/jeffbinder/distancemachine">Source code</a> | <a href="tos">Legal</a></div>
    <div>This site copyright © 2014 Jeffrey Binder.</div>
   </div>
+  </div>
   <div id="status-box">
     <div>Generating annotations: <span id="percentage">0%</span></div>
     <div><progress id="progress-bar" max="100" value="0"></progress></div>
@@ -92,6 +94,7 @@
    </form>
   </div>
   <div id="word-info">
+    <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
     <div>Selected word: <span id="selected-word"></span></div>
     <hr />
     Frequency in the Google Books <span id="corpus-name"></span> corpus (click to view):
@@ -99,6 +102,12 @@
     <div><span id="usage-periods-text"></span></div>
     <hr />
     <div id="definition-area"><span id="definitions"></span></div>
+  </div>
+  <div id="reverse-lookup-box">
+    <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
+    <div id="reverse-lookup-text"></div>
+    <hr />
+    <div id="reverse-lookup-word-area"><span id="reverse-lookup-words"></span></div>
   </div>
  </body>
 </html>

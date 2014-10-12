@@ -106,9 +106,40 @@ function load_totals()
     });
 }
 
-// Called by the wordinfo code, but non-functional here.
+window.popup_history = [];
+function clear_history()
+{
+    window.popup_history = [];
+    $(".back-button").css("display", "none");
+}
 function push_history()
 {
+    if (window.word_info_visible || window.reverse_lookup_box_visible) {
+        popup_history.push([window.word_info_visible,
+                            window.reverse_lookup_box_visible,
+                            window.word_info_selected_word,
+                            window.word_info_selected_corpus,
+                            window.word_info_selected_dict]);
+        $(".back-button").css("display", "inline");
+    }
+}
+function pop_history()
+{
+    var i = popup_history.length - 1;
+    if (i == -1) {
+        return;
+    }
+    if (popup_history[i][0]) {
+        show_word_info(popup_history[i][2], popup_history[i][3]);
+        hide_reverse_lookup_box();
+    } else if (popup_history[i][1]) {
+        hide_word_info();
+        show_reverse_lookup_box(popup_history[i][2], popup_history[i][4]);
+    }
+    popup_history.pop();
+    if (popup_history.length == 0) {
+        $(".back-button").css("display", "none");
+    }
 }
 
 function lookup_word()
@@ -125,6 +156,17 @@ function update_word_info_height()
 {
     var h = window.innerHeight;
     $("#definition-area").css("max-height", h - 383 - 115 - 24);
+}
+
+function get_selection()
+{
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    return text;
 }
 
 $(function () {
@@ -146,9 +188,16 @@ $(function () {
     window.onresize = function () {
         update_word_info_height();
     };
+    
+    $("#definition-area,#reverse-lookup-word-area").dblclick(function (e) {
+        var word = get_selection();
+        push_history();
+        show_word_info(word, $("#word-lookup-corpus-input").val());
+    });
 
-    $(document).click(function(e) {
+    $("#main-area").click(function(e) {
         hide_word_info();
+        hide_reverse_lookup_box();
         hide_error_box();
     });
     $(document).keyup(function(e) {});

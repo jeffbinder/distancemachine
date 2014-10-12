@@ -340,6 +340,10 @@ function update_word_definitions(word, corpus, data)
                 html.push("<div>" + pars[j] + "</div>");
             }
         }
+        
+        html.push("<div><a href='javascript:push_history();show_reverse_lookup_box(\"" + word
+                  + "\", \"" + dict + "\")'>Find definitions in " + dict_name[0]
+                  + " that use this word</a>.</div>");
     }
     
     $("#definitions").html(html.join(''));
@@ -357,8 +361,10 @@ function show_word_info(word, corpus)
     $("#definitions").html("");
     $("#word-info").css("display", "inline");
     
+    hide_reverse_lookup_box();
     window.word_info_visible = true;
     window.word_info_selected_word = word;
+    window.word_info_selected_corpus = corpus;
     
     last_request_id += 1;
     var request_id = last_request_id;
@@ -382,4 +388,68 @@ function hide_word_info()
 {
     $("#word-info").css("display", "none");
     window.word_info_visible = false;
+}
+
+// Optionally implemented by the page.
+function update_reverse_lookup_box_height()
+{
+}
+
+function update_reverse_lookup_box(word, dict, data)
+{
+    var headwords = data['headwords'].sort(),
+        html = [];
+        
+    for (var i in headwords) {
+        html.push("<div class='grid-word'> " + headwords[i] + " </div>");
+    }
+    html = html.join("");
+    
+    $("#reverse-lookup-words").html(html);
+    
+    if (headwords.length > 0) {
+        $("#reverse-lookup-text").html("Variants of the word <span id='reverse-lookup-word'>" + word
+                                       + "</span> appear in the <span id='reverse-lookup-dict'>"
+                                       + dict_names[dict][0] + "</span> definitions for "
+                                       + "<span id='reverse-lookup-count'>" + headwords.length
+                                       + "</span> words:");
+    } else {
+        $("#reverse-lookup-text").html("Variants of the word <span id='reverse-lookup-word'>" + word
+                                       + "</span> do not appear in any <span id='reverse-lookup-dict'>"
+                                       + dict_names[dict][0] + "</span> definitions.");
+    }
+    
+    update_reverse_lookup_box_height();
+}
+
+function show_reverse_lookup_box(word, dict)
+{
+    $("#reverse-lookup-word").text(word);
+    $("#reverse-lookup-dict").text(dict_names[dict][0]);
+    $("#reverse-lookup-text").html("Loading...");
+    $("#reverse-lookup-words").html("");
+    $("#reverse-lookup-box").css("display", "inline");
+    
+    hide_word_info();
+    window.reverse_lookup_box_visible = true;
+    window.word_info_selected_word = word;
+    window.word_info_selected_dict = dict;
+    
+    last_request_id += 1;
+    var request_id = last_request_id;
+    $.getJSON("reverselookup.php", {"word": word, "dict": dict}, function(data) {
+        if (request_id == last_request_id) {
+            $("#reverse-lookup-status").html("");
+            update_reverse_lookup_box(word, dict, data);
+        }
+    })
+    .fail(function () {
+        $("#reverse-lookup-text").html("Error looking up headwords.");
+    });
+}
+
+function hide_reverse_lookup_box()
+{
+    $("#reverse-lookup-box").css("display", "none");
+    window.reverse_lookup_box_visible = false;
 }

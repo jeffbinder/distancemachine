@@ -1015,7 +1015,7 @@ GROUP BY synset.pos, sense.rank, synset.definition
     return $definitions;
 }
 
-// Get a definition from Webster's 1828 dictionary.
+// Get a definition from an old dictionary.
 function get_dict_definitions($word)
 {
     global $mysqli, $dict_db_name, $wordnet_db_name;
@@ -1064,6 +1064,42 @@ WHERE dict.dict = ? AND dict.headword = ?
     mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
     
     return $definitions;
+}
+
+// Find dictionary definitions that use the specified word
+function reverse_dict_lookup($word, $dict)
+{
+    global $mysqli, $dict_db_name, $wordnet_db_name;
+
+    $word = strtolower($word);
+    $lemmas = lemmatize($word, false);
+    
+    mysqli_select_db($mysqli, $dict_db_name) or die('Could not select database');
+    
+    $headwords = [];
+    $lemmas_used = [];
+    foreach ($lemmas as $lemma) {
+        if (in_array($lemma[0], $lemmas_used)) {
+            continue;
+        }
+        $query = $mysqli->prepare("
+SELECT headword
+FROM dict_index
+WHERE dict_index.dict = ? AND dict_index.lemma = ?
+");
+        $query->bind_param('ss', $dict, $lemma[0]);
+        if ($query->execute()) {
+            $query->bind_result($headword);
+            while ($query->fetch()) {
+                $headwords[] = $headword;
+            }
+            $query->free_result();
+        }
+    }
+    
+    mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
+    
+    return array_values(array_unique($headwords));
 }
 
 ?>

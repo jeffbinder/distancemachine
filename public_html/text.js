@@ -374,11 +374,14 @@ function clear_history()
 }
 function push_history()
 {
-    if (window.word_info_visible || window.word_list_visible || window.stats_box_visible) {
+    if (window.word_info_visible || window.word_list_visible || window.stats_box_visible
+        || window.reverse_lookup_box_visible) {
         popup_history.push([window.word_info_visible,
                             window.word_list_visible,
                             window.stats_box_visible,
-                            window.word_info_selected_word]);
+                            window.reverse_lookup_box_visible,
+                            window.word_info_selected_word,
+                            window.word_info_selected_dict]);
         $(".back-button").css("display", "inline");
     }
 }
@@ -389,17 +392,25 @@ function pop_history()
         return;
     }
     if (popup_history[i][0]) {
-        show_word_info(popup_history[i][3], corpus);
+        show_word_info(popup_history[i][4], corpus);
         hide_word_list();
         hide_stats_box();
+        hide_reverse_lookup_box();
     } else if (popup_history[i][1]) {
         hide_word_info();
         show_word_list();
         hide_stats_box();
+        hide_reverse_lookup_box();
     } else if (popup_history[i][2]) {
         hide_word_info();
         hide_word_list();
         show_stats_box();
+        hide_reverse_lookup_box();
+    } else if (popup_history[i][3]) {
+        hide_word_info();
+        hide_word_list();
+        hide_stats_box();
+        show_reverse_lookup_box(popup_history[i][4], popup_history[i][5]);
     }
     popup_history.pop();
     if (popup_history.length == 0) {
@@ -412,6 +423,13 @@ function update_word_info_height()
     var h = window.innerHeight;
     $("#definition-area").css("max-height", h - 368
                        - $("#usage-periods-text").height() - 115 - 24);
+}
+
+function update_reverse_lookup_box_height()
+{
+    var h = window.innerHeight;
+    $("#reverse-lookup-word-area").css("max-height", h - 32
+                                       - $("#reverse-lookup-text").height() - 115 - 24);
 }
 
 function get_words_with_class(css_class, filter_apostrophes)
@@ -1091,16 +1109,18 @@ $(window).load(function () {
     window.onscroll = update_visibility;
     
     update_word_info_height();
+    update_reverse_lookup_box_height();
     update_word_list_height();
     update_stats_box_height();
     window.onresize = function () {
         update_visibility();
         update_word_info_height();
+        update_reverse_lookup_box_height();
         update_word_list_height();
         update_stats_box_height();
     };
     
-    $("#text-area,#definition-area,#word-list-area").dblclick(function (e) {
+    $("#text-area,#definition-area,#word-list-area,#reverse-lookup-word-area").dblclick(function (e) {
         var word = get_selection();
         push_history();
         show_word_info(word, window.corpus);

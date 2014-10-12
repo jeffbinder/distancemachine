@@ -73,3 +73,20 @@ CREATE TABLE dict_usage_notes (
   note VARCHAR(63) NOT NULL,
   KEY (headword)
 );
+
+CREATE TABLE dict_etymology (
+  dict VARCHAR(15) NOT NULL,
+  headword VARCHAR(255) NOT NULL,
+  language VARCHAR(15) NOT NULL,
+  KEY (headword)
+);
+
+CREATE TABLE dict_index (
+  dict VARCHAR(15) NOT NULL,
+  headword VARCHAR(255) NOT NULL,
+  lemma VARCHAR(255) NOT NULL,
+  count MEDIUMINT UNSIGNED NOT NULL,
+  KEY (headword),
+  KEY (lemma)
+);
+

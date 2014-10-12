@@ -163,6 +163,17 @@
     display: none;
 }
 
+#reverse-lookup-box {
+    position: fixed;
+    top: 115px;
+    right: 25px;
+    width: 420px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+}
+
 #stats-box {
     position: fixed;
     top: 115px;
@@ -247,13 +258,6 @@
 
 #word-list-area > hr {
     clear: both;
-}
-
-.grid-word {
-    float: left;
-    min-width: 100px;
-    margin-right: 5px;
-    margin-bottom: 5px;
 }
 
 #save-box {
