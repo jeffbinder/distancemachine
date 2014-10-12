@@ -225,7 +225,7 @@ function update_slider_value()
         if ($("#slider").slider("value") != scaled_freq) {
             $("#slider").slider("value", scaled_freq);
         }
-        $("#print-header-text").html("Highlighting words with average frequency >= <b>1/" + format_freq(current_freq) + "</b>");
+        $("#print-header-text").html("Highlighting words with average frequency >= <b>" + format_freq(current_freq) + "</b>");
     }
 }
 
