@@ -356,7 +356,7 @@ function update_word_definitions(word, corpus, data)
 // present one has finished, in which case we must abort.
 window.last_request_id = 0;
 
-function show_word_info(word, corpus)
+function show_word_info(word, corpus, scroll_top)
 {
     $("#selected-word").text(word);
     $("#word-usage-chart").html("<div id='word-info-loading-message'>Loading...</div>");
@@ -379,6 +379,9 @@ function show_word_info(word, corpus)
             update_word_definitions(word, corpus, data);
             if (update_word_info_height) {
                 update_word_info_height();
+            }
+            if (scroll_top) {
+                $("#definition-area").scrollTop(scroll_top);
             }
         }
     })
@@ -425,7 +428,7 @@ function update_reverse_lookup_box(word, dict, data)
     update_reverse_lookup_box_height();
 }
 
-function show_reverse_lookup_box(word, dict)
+function show_reverse_lookup_box(word, dict, scroll_top)
 {
     $("#reverse-lookup-word").text(word);
     $("#reverse-lookup-dict").text(dict_names[dict][0]);
@@ -444,6 +447,9 @@ function show_reverse_lookup_box(word, dict)
         if (request_id == last_request_id) {
             $("#reverse-lookup-status").html("");
             update_reverse_lookup_box(word, dict, data);
+            if (scroll_top) {
+                $("#reverse-lookup-word-area").scrollTop(scroll_top);
+            }
         }
     })
     .fail(function () {

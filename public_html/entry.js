@@ -115,11 +115,18 @@ function clear_history()
 function push_history()
 {
     if (window.word_info_visible || window.reverse_lookup_box_visible) {
+        var scroll_top;
+        if (window.word_info_visible) {
+            scroll_top = $("#definition-area").scrollTop();
+        } else if (window.reverse_lookup_box_visible) {
+            scroll_top = $("#reverse-lookup-word-area").scrollTop();
+        }
         popup_history.push([window.word_info_visible,
                             window.reverse_lookup_box_visible,
                             window.word_info_selected_word,
                             window.word_info_selected_corpus,
-                            window.word_info_selected_dict]);
+                            window.word_info_selected_dict,
+                            scroll_top]);
         $(".back-button").css("display", "inline");
     }
 }
@@ -130,11 +137,11 @@ function pop_history()
         return;
     }
     if (popup_history[i][0]) {
-        show_word_info(popup_history[i][2], popup_history[i][3]);
+        show_word_info(popup_history[i][2], popup_history[i][3], popup_history[i][5]);
         hide_reverse_lookup_box();
     } else if (popup_history[i][1]) {
         hide_word_info();
-        show_reverse_lookup_box(popup_history[i][2], popup_history[i][4]);
+        show_reverse_lookup_box(popup_history[i][2], popup_history[i][4], popup_history[i][5]);
     }
     popup_history.pop();
     if (popup_history.length == 0) {
