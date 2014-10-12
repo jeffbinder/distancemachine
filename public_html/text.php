@@ -115,7 +115,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
      <div id="slider" style="float:right"></div>
      <div style="float:right"><button id="play-button"></button></div>
     </div>
-    <div style="clear:both"><a href="javascript:show_word_list()">Show list of highlighted words</a> &ndash; <a href="javascript:show_stats_box()">overall stats for document</a></div>
+    <div style="clear:both"><a href="javascript:push_history();show_word_list()">Show list of highlighted words</a> &ndash; <a href="javascript:push_history();show_stats_box()">overall stats for document</a></div>
    </div>
    <div id="option-area-right" style="float:right">
     <div style="float:right;margin-right:19px;margin-top:2px;margin-bottom:3px">
@@ -152,6 +152,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
    </div>
   </div>
   <div id="word-info">
+    <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
     <div>Selected word: <span id="selected-word"></span></div>
     <hr />
     Frequency in the Google Books <span class="corpus-name"></span> corpus (click to view):
@@ -161,7 +162,8 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     <div id="definition-area"><span id="definitions"></span></div>
   </div>
   <div id="stats-box">
-    Word usage statistics for &ldquo;<span class="document-title"></span>&rdquo;
+    <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
+    <div>Word usage statistics for &ldquo;<span class="document-title"></span>&rdquo;</div>
     <hr />
     Percentage of words uncommon in each year:
     <div id="document-chart"></div>
@@ -182,6 +184,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     </div>
   </div>
   <div id="word-list">
+    <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
     <div><span id="word-list-option-text"></span></div>
     <hr />
     <div id="word-list-area"></div>

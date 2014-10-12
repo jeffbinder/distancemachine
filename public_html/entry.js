@@ -106,6 +106,11 @@ function load_totals()
     });
 }
 
+// Called by the wordinfo code, but non-functional here.
+function push_history()
+{
+}
+
 function lookup_word()
 {
     var word = $("#word-lookup").val();

@@ -366,6 +366,47 @@ function update_visibility()
     update_highlighting(window.lines);
 }
 
+window.popup_history = [];
+function clear_history()
+{
+    window.popup_history = [];
+    $(".back-button").css("display", "none");
+}
+function push_history()
+{
+    if (window.word_info_visible || window.word_list_visible || window.stats_box_visible) {
+        popup_history.push([window.word_info_visible,
+                            window.word_list_visible,
+                            window.stats_box_visible,
+                            window.word_info_selected_word]);
+        $(".back-button").css("display", "inline");
+    }
+}
+function pop_history()
+{
+    var i = popup_history.length - 1;
+    if (i == -1) {
+        return;
+    }
+    if (popup_history[i][0]) {
+        show_word_info(popup_history[i][3], corpus);
+        hide_word_list();
+        hide_stats_box();
+    } else if (popup_history[i][1]) {
+        hide_word_info();
+        show_word_list();
+        hide_stats_box();
+    } else if (popup_history[i][2]) {
+        hide_word_info();
+        hide_word_list();
+        show_stats_box();
+    }
+    popup_history.pop();
+    if (popup_history.length == 0) {
+        $(".back-button").css("display", "none");
+    }
+}
+
 function update_word_info_height()
 {
     var h = window.innerHeight;
@@ -864,7 +905,7 @@ function hide_stats_box()
 function update_stats_box_height()
 {
     var h = window.innerHeight;
-    $("#dictionary-stats-area").css("max-height", h - 467 - 115 - 24);
+    $("#dictionary-stats-area").css("max-height", h - 550 - 115 - 24);
 }
 
 function get_selection()
@@ -1061,6 +1102,7 @@ $(window).load(function () {
     
     $("#text-area,#definition-area,#word-list-area").dblclick(function (e) {
         var word = get_selection();
+        push_history();
         show_word_info(word, window.corpus);
         hide_word_list();
         hide_stats_box();
@@ -1074,6 +1116,7 @@ $(window).load(function () {
     $("#text-area span").on("touchend", function (e) {
         if (window.touching_word) {
             var word = e.target.textContent;
+            push_history();
             show_word_info(word, window.corpus);
             hide_word_list();
             hide_stats_box();
@@ -1097,6 +1140,7 @@ $(window).load(function () {
     $("#word-lookup").keyup(function (e) {
         if (e.keyCode == 13) {
             var word = $("#word-lookup").val();
+            push_history();
             show_word_info(word, window.corpus);
             hide_word_list();
             hide_stats_box();
@@ -1104,6 +1148,7 @@ $(window).load(function () {
     });
 
     $("#main-area").click(function(e) {
+        clear_history();
         hide_word_info();
         hide_word_list();
         hide_stats_box();

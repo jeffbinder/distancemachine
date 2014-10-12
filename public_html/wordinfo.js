@@ -301,7 +301,7 @@ function update_word_definitions(word, corpus, data)
             } else if (syn.indexOf(" ") != -1) {
                 html.push(syn);
             } else {
-                html.push('<a href="javascript:show_word_info(\'' + syn + '\',\'' + corpus + '\')">');
+                html.push('<a href="javascript:push_history();show_word_info(\'' + syn + '\',\'' + corpus + '\')">');
                 html.push(syn);
                 html.push("</a>");
             }
@@ -357,6 +357,9 @@ function show_word_info(word, corpus)
     $("#definitions").html("");
     $("#word-info").css("display", "inline");
     
+    window.word_info_visible = true;
+    window.word_info_selected_word = word;
+    
     last_request_id += 1;
     var request_id = last_request_id;
     $.getJSON("wordinfo.php", {"word": word, "corpus": corpus}, function(data) {
@@ -378,4 +381,5 @@ function show_word_info(word, corpus)
 function hide_word_info()
 {
     $("#word-info").css("display", "none");
+    window.word_info_visible = false;
 }

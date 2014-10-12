@@ -142,6 +142,16 @@
     }
 }
 
+.back-button {
+    position: absolute;
+    left: -68px;
+    width: 38px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+}
+
 #word-info {
     position: fixed;
     top: 115px;
@@ -171,10 +181,6 @@
     margin-bottom: 20px;
 }
 
-#stats-box div {
-    margin-top: 0.5em;
-}
-
 #dictionary-stats {
     margin-top: 0 !important;
 }
@@ -184,6 +190,18 @@
     max-height: 250px;
     overflow-y: scroll;
     overflow-x: hidden;
+}
+
+#selected-year-stats div {
+    margin-top: 0.5em;
+}
+
+#freq-stats div {
+    margin-top: 0.5em;
+}
+
+#dictionary-stats-area div {
+    margin-top: 0.5em;
 }
 
 #stats-box ::-webkit-scrollbar {
