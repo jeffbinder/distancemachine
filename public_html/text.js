@@ -589,6 +589,7 @@ function show_word_list(scroll_top)
     update_word_list_height();
     hide_word_info();
     hide_stats_box();
+    hide_reverse_lookup_box();
     window.word_list_visible = true;
 }
 
@@ -928,6 +929,7 @@ function show_stats_box(scroll_top)
     $("#stats-box").css("display", "inline");
     hide_word_info();
     hide_word_list();
+    hide_reverse_lookup_box();
     window.stats_box_visible = true;
 }
 
@@ -1189,6 +1191,7 @@ $(window).load(function () {
         hide_word_info();
         hide_word_list();
         hide_stats_box();
+        hide_reverse_lookup_box();
         hide_help_box();
         hide_save_box();
         hide_save_error_box();
