@@ -220,7 +220,10 @@ function update_word_usage_text(word, data)
         html = [];
     
     if (periods.length == 0) {
-        html.push("No usage data available for this word.");
+        html.push("No usage data available for this word. <a href='"
+                  + ('http://www.google.com/search?q="' + word
+                    + '"&tbs=bks:1,cdr:1&num=100&lr=lang_en') + "' target='_blank'>"
+                  + "Search Google Books</a>.");
     } else {
         html.push("Avg freq <b>" + format_freq(1.0 / avg) + "</b>. ");
         if (periods.length == 1) {
