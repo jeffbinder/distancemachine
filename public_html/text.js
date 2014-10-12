@@ -1189,7 +1189,7 @@ $(window).load(function () {
     // Prevent scroll wheel events from scrolling the body when the cursor is in a fixed
     // div.  This is mainly so that the user can scroll the definition area without
     // scrolling the document as a whole when they get to the end.
-    $("#word-info,#word-list,#dictionary-stats,#header")
+    $("#word-info,#word-list,#dictionary-stats,#header,#reverse-lookup-words")
         .hover(function(e) {
             $("body").css("overflow", "hidden");
         }, function(e) {
