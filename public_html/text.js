@@ -492,7 +492,8 @@ function update_word_list()
         if (words.length == 0) {
             html.push("No words found that were more common earlier.");
         } else {
-            html.push("Words that were more common earlier:<div>");
+            html.push(words.length + " " + (words.length > 1 ? "words that were" : "word that was")
+                      + " more common earlier:<div>");
             html.push(create_word_grid(words, "old-word"));
             html.push("</div>");
         }
@@ -502,7 +503,8 @@ function update_word_list()
         if (words.length == 0) {
             html.push("<div>No words found that were more common later.</div>");
         } else {
-            html.push("<div>Words that were more common later:</div><div>");
+            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that were" : "word that was")
+                      + " more common later:</div><div>");
             html.push(create_word_grid(words, "new-word"));
             html.push("</div>");
         }
@@ -512,7 +514,8 @@ function update_word_list()
         if (words.length == 0) {
             html.push("<div>No words found that were more common both earlier and later.</div>");
         } else {
-            html.push("<div>Words that were more common both earlier and later:</div><div>");
+            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that were" : "word that was")
+                      + " more common both earlier and later:</div><div>");
             html.push(create_word_grid(words, "lapsed-word"));
             html.push("</div>");
         }
@@ -524,7 +527,8 @@ function update_word_list()
             html.push("No words found with average frequency <b>&lt;= " + format_freq(current_freq)
                       + "</b>.");
         } else {
-            html.push("Words with average frequency <b>&lt;= " + format_freq(current_freq)
+            html.push(words.length + " " + (words.length > 1 ? "words" : "word")
+                      + " with average frequency <b>&lt;= " + format_freq(current_freq)
                       + "</b>:<div>");
             html.push(create_word_grid(words, "rare-word"));
             html.push("</div>");
@@ -535,7 +539,8 @@ function update_word_list()
         if (words.length == 0) {
             html.push("No words found that were absent from the corpus " + data_start_year + "-.");
         } else {
-            html.push("Words that are absent from the corpus altogether (" + data_start_year + "-):<div>");
+            html.push(words.length + " " + (words.length > 1 ? "words that are" : "word that is")
+                      + " absent from the corpus altogether (" + data_start_year + "-):<div>");
             html.push(create_word_grid(words, "absent-word"));
             html.push("</div>");
         }
@@ -546,7 +551,8 @@ function update_word_list()
         if (words.length == 0) {
             html.push("No words found that were marked as rare or obsolete in the dictionary.");
         } else {
-            html.push("Words that are marked as rare or obsolete in the dictionary:<div>");
+            html.push(words.length + " " + (words.length > 1 ? "words that are" : "word that is")
+                      + " marked as rare or obsolete in the dictionary:<div>");
             html.push(create_word_grid(words, "obsolete-word"));
             html.push("</div>");
         }
@@ -556,7 +562,8 @@ function update_word_list()
         if (words.length == 0) {
             html.push("<div>No words found that were marked as vulgar, colloquial, or improper in the dictionary.</div>");
         } else {
-            html.push("<div>Words that were marked as vulgar, colloquial, or improper in the dictionary:</div><div>");
+            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that are" : "word that is")
+                      + " marked as vulgar, colloquial, or improper in the dictionary:</div><div>");
             html.push(create_word_grid(words, "vulgar-word"));
             html.push("</div>");
         }
@@ -566,7 +573,8 @@ function update_word_list()
         if (words.length == 0) {
             html.push("<div>All words in the text were found in the dictionary.</div>");
         } else {
-            html.push("<div>Words that were not found in the dictionary:</div><div>");
+            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that were" : "word that was")
+                      + " not found in the dictionary:</div><div>");
             html.push(create_word_grid(words, "omitted-word"));
             html.push("</div>");
         }
