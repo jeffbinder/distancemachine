@@ -3,8 +3,9 @@
 }
 
 #header-loading {
-    position: fixed;
-    height: 55px;
+    position: absolute;
+    top: 0;
+    height: 55px
     width: 100%;
     margin: 0;
     padding-top: 35px;
@@ -16,11 +17,13 @@
 }
 
 #header {
-    position: fixed;
-    height: 80px;
+    position: absolute;
+    top: 0;
+    /*height: 80px;*/
     width: 100%;
     margin: 0;
-    padding: 5px;
+    padding-top: 5px;
+    padding-bottom: 7px;
     background-color: #f1ede5;
     border-bottom: 1px solid #c5b390;
     z-index: 1;
@@ -66,7 +69,7 @@
 
 #controls {
     margin-top: 6px;
-    margin-right: 13px;
+    margin-right: 8px;
     padding: 5px;
     background-color: white;
     border: 1px solid #e0cfc2;
@@ -74,6 +77,8 @@
 
 #main-area {
     text-align: left;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
 }
 
 #text-area {
@@ -82,7 +87,6 @@
     background-color: white;
     border: 0;
     font-family: 'Inika', sans;
-    font-size: 11pt;
 }
 
 .line {
@@ -99,10 +103,26 @@
     }
     #text-area {
 	display: inline-block;
-        top: 160px;
+        top: 170px;
 	padding-left: 80px;
 	padding-right: 10px;
 	padding-bottom: 300px;
+        font-size: 11pt;
+    }
+}
+
+@media only screen and (device-width: 768px) {
+    #text-area {
+        top: 150px;
+	padding-left: 60px;
+        font-size: 10pt;
+    }
+}
+
+@media only screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:portrait) {
+    #text-area {
+        top: 110px;
+	padding-left: 25px;
     }
 }
 
@@ -124,6 +144,7 @@
         top: 50px;
 	left: 80px;
 	padding: 0;
+        font-size: 11pt;
     }
     #word-info {
 	visibility: hidden;
@@ -152,11 +173,15 @@
     display: none;
 }
 
+#definition-area,#word-list-area,#stats-area,#reverse-lookup-word-area {
+    -webkit-overflow-scrolling: touch;
+}
+
 #word-info {
     position: fixed;
     top: 115px;
-    right: 25px;
-    width: 420px;
+    right: 20px;
+    width: 405px;
     padding: 10px;
     background-color: #f1ede5;
     border: 1px solid #c5b390;
@@ -166,8 +191,8 @@
 #reverse-lookup-box {
     position: fixed;
     top: 115px;
-    right: 25px;
-    width: 420px;
+    right: 20px;
+    width: 405px;
     padding: 10px;
     background-color: #f1ede5;
     border: 1px solid #c5b390;
@@ -177,8 +202,8 @@
 #stats-box {
     position: fixed;
     top: 115px;
-    right: 25px;
-    width: 420px;
+    right: 20px;
+    width: 405px;
     padding: 10px;
     background-color: #f1ede5;
     border: 1px solid #c5b390;
@@ -196,7 +221,7 @@
     margin-top: 0 !important;
 }
 
-#dictionary-stats-area {
+#stats-area {
     margin-top: 0 !important;
     max-height: 250px;
     overflow-y: scroll;
@@ -211,7 +236,7 @@
     margin-top: 0.5em;
 }
 
-#dictionary-stats-area div {
+#stats-area div {
     margin-top: 0.5em;
 }
 
@@ -228,8 +253,8 @@
 #word-list {
     position: fixed;
     top: 115px;
-    right: 25px;
-    width: 420px;
+    right: 20px;
+    width: 405px;
     padding: 10px;
     background-color: #f1ede5;
     border: 1px solid #c5b390;
@@ -287,8 +312,8 @@
 #help-box {
     position: fixed;
     top: 115px;
-    right: 25px;
-    width: 420px;
+    right: 20px;
+    width: 405px;
     padding: 10px;
     background-color: #f1ede5;
     border: 1px solid #c5b390;

@@ -344,8 +344,13 @@ function animate()
 function update_visibility()
 {
     var h = window.innerHeight,
-        y = (document.documentElement.scrollTop||document.body.scrollTop);
-        
+        y = main_area.scrollTop;
+
+    if (window.touchscreen) {
+	// Update the highlighting an extra screen ahead to account for scrolling inertia.
+	h *= 2;
+    }
+
     var first_line_visible = Math.floor((y - first_line_top) / line_height) - 1,
         last_line_visible = first_line_visible + Math.ceil(h / line_height) + 1;
     if (first_line_visible < 0) {
@@ -382,7 +387,7 @@ function push_history()
         } else if (window.word_list_visible) {
             scroll_top = $("#word-list-area").scrollTop();
         } else if (window.stats_box_visible) {
-            scroll_top = $("#dictionary-stats-area").scrollTop();
+            scroll_top = $("#stats-area").scrollTop();
         } else if (window.reverse_lookup_box_visible) {
             scroll_top = $("#reverse-lookup-word-area").scrollTop();
         }
@@ -427,6 +432,12 @@ function pop_history()
     if (popup_history.length == 0) {
         $(".back-button").css("display", "none");
     }
+}
+
+function update_main_area_height()
+{
+    var h = window.innerHeight;
+    $("#main-area").css("max-height", h);
 }
 
 function update_word_info_height()
@@ -932,7 +943,7 @@ function show_stats_box(scroll_top)
 {
     update_document_stats();
     if (scroll_top) {
-        $("#dictionary-stats-area").scrollTop(scroll_top);
+        $("#stats-area").scrollTop(scroll_top);
     }
     $("#stats-box").css("display", "inline");
     hide_word_info();
@@ -950,7 +961,7 @@ function hide_stats_box()
 function update_stats_box_height()
 {
     var h = window.innerHeight;
-    $("#dictionary-stats-area").css("max-height", h - 550 - 115 - 24);
+    $("#stats-area").css("max-height", h - 522);
 }
 
 function get_selection()
@@ -1130,16 +1141,71 @@ $(window).load(function () {
         $.cookie("help-displayed", "yes");
         show_help_box()
     }
+
+    // This is to detect if we are on a touchscreen.
+    window.touchscreen = false;
+    $("body").on("touchstart", function (e) {
+        window.touchscreen = true;
+        $("body").off("touchstart");
+
+        // Tapping words opens the word info box.
+        $("#text-area span,#text-area div").on("click", function (e) {
+            // Modified from http://jsfiddle.net/Vap7C/80/
+            var word = '';
+            if (window.getSelection && (sel = window.getSelection()).modify) {
+                // Webkit, Gecko
+                var s = window.getSelection();
+                if (s.isCollapsed) {
+                    s.modify('move', 'forward', 'character');
+                    s.modify('move', 'backward', 'word');
+                    s.modify('extend', 'forward', 'word');
+                    word = s.toString();
+                    if (word.substr(word.length - 1, 1).search(/[^A-Za-z\s]/) != -1) {
+                        // For iOS: remove non-alpha characters if need be.
+                        word = word.substr(0, word.length - 1);
+                    }
+                    s.modify('move', 'forward', 'character'); //clear selection
+                } else {
+                    word = s.toString();
+                }
+            } else if ((sel = document.selection) && sel.type != "Control") {
+                // IE 4+
+                var textRange = sel.createRange();
+                if (!textRange.text) {
+                    textRange.expand("word");
+                }
+                // Remove trailing spaces
+                while (/\s$/.test(textRange.text)) {
+                    textRange.moveEnd("character", -1);
+                }
+                word = textRange.text;
+            }
+            if (word) {
+                push_history();
+                show_word_info(word, window.corpus);
+                hide_word_list();
+                hide_stats_box();
+                hide_reverse_lookup_box();
+                hide_help_box();
+                hide_save_box();
+                hide_save_error_box();
+                return false;
+            }
+        });
+    });
     
-    // No jQuery here for efficiency's sake.
+    // No JQuery for efficiency's sake.
+    window.main_area = $("#main-area")[0];
     update_visibility();
-    window.onscroll = update_visibility;
+    main_area.onscroll = update_visibility;
     
+    update_main_area_height();
     update_word_info_height();
     update_reverse_lookup_box_height();
     update_word_list_height();
     update_stats_box_height();
     window.onresize = function () {
+        update_main_area_height();
         update_visibility();
         update_word_info_height();
         update_reverse_lookup_box_height();
@@ -1147,28 +1213,13 @@ $(window).load(function () {
         update_stats_box_height();
     };
     
+    // Doubly clicking/tapping on words opens the word info box.
     $("#text-area,#definition-area,#word-list-area,#reverse-lookup-word-area").dblclick(function (e) {
         var word = get_selection();
         push_history();
         show_word_info(word, window.corpus);
         hide_word_list();
         hide_stats_box();
-    });
-    $("#text-area span").on("touchstart", function (e) {
-        window.touching_word = true;
-    });
-    $("#text-area span").on("touchmove", function (e) {
-        window.touching_word = false;
-    });
-    $("#text-area span").on("touchend", function (e) {
-        if (window.touching_word) {
-            var word = e.target.textContent;
-            push_history();
-            show_word_info(word, window.corpus);
-            hide_word_list();
-            hide_stats_box();
-            return false;
-        }
     });
 
     set_year(current_year);
@@ -1191,6 +1242,9 @@ $(window).load(function () {
             show_word_info(word, window.corpus);
             hide_word_list();
             hide_stats_box();
+            // This is to hide the keyboard on iOS.
+            document.activeElement.blur();
+            $("input").blur();
         }
     });
 
@@ -1217,7 +1271,7 @@ $(window).load(function () {
     // Prevent scroll wheel events from scrolling the body when the cursor is in a fixed
     // div.  This is mainly so that the user can scroll the definition area without
     // scrolling the document as a whole when they get to the end.
-    $("#definition-area,#word-list-area,#dictionary-stats-area,#reverse-lookup-word-area")
+    $("#definition-area,#word-list-area,#stats-area,#reverse-lookup-word-area")
         .on('DOMMouseScroll mousewheel', function(ev) {
             var $this = $(this),
                 scrollTop = this.scrollTop,
@@ -1234,7 +1288,7 @@ $(window).load(function () {
                 return false;
             }
         });
-    $("#word-info,#word-list,#dictionary-stats,#header,#reverse-lookup-box")
+    $("#word-info,#word-list,#stats-box,#header,#reverse-lookup-box")
         .on('DOMMouseScroll mousewheel', function(ev) {
             ev.stopPropagation();
             ev.preventDefault();

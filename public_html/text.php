@@ -51,6 +51,7 @@ $content = $data['content'];
 <html>
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="maximum-scale=1">
   <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
@@ -173,13 +174,13 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     <hr />
     Percentage of words uncommon in each year:
     <div id="document-chart"></div>
-    <div>The lines indicate the % of words more common <span class="old-word">earlier</span>, <span class="new-word">later</span>, or <span class="lapsed-word">both</span>.</div>
+    <div>The lines show the % of words more common <span class="old-word">earlier</span>, <span class="new-word">later</span>, or <span class="lapsed-word">both</span>.</div>
     <hr />
-    <div id="selected-year-stats"></div>
-    <hr />
-    <div id="freq-stats"></div>
-    <hr />
-    <div id="dictionary-stats-area">
+    <div id="stats-area">
+      <div id="selected-year-stats"></div>
+      <hr />
+      <div id="freq-stats"></div>
+      <hr />
       <div id="dictionary-stats"></div>
     </div>
   </div>
