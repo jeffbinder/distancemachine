@@ -1217,11 +1217,29 @@ $(window).load(function () {
     // Prevent scroll wheel events from scrolling the body when the cursor is in a fixed
     // div.  This is mainly so that the user can scroll the definition area without
     // scrolling the document as a whole when they get to the end.
-    $("#word-info,#word-list,#dictionary-stats,#header,#reverse-lookup-words")
-        .hover(function(e) {
-            $("body").css("overflow", "hidden");
-        }, function(e) {
-            $("body").css("overflow", "auto");
+    $("#definition-area,#word-list-area,#dictionary-stats-area,#reverse-lookup-word-area")
+        .on('DOMMouseScroll mousewheel', function(ev) {
+            var $this = $(this),
+                scrollTop = this.scrollTop,
+                scrollHeight = this.scrollHeight,
+                height = $this.height(),
+                delta = (ev.type == 'DOMMouseScroll' ?
+                         ev.originalEvent.detail :
+                         ev.originalEvent.wheelDelta);
+            ev.stopPropagation();
+            if ((delta < 0 && scrollTop >= scrollHeight - height)
+                || (delta > 0 && scrollTop <= 0)) {
+                ev.preventDefault();
+                ev.returnValue = false;
+                return false;
+            }
+        });
+    $("#word-info,#word-list,#dictionary-stats,#header,#reverse-lookup-box")
+        .on('DOMMouseScroll mousewheel', function(ev) {
+            ev.stopPropagation();
+            ev.preventDefault();
+            ev.returnValue = false;
+            return false;
         });
     
     // Periodically touch the tmp file as long as the page is open so it doesn't get
