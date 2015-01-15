@@ -77,7 +77,7 @@ $content = $data['content'];
   <link rel="stylesheet" type="text/css" href="text.css">
   <!--<link rel="stylesheet" type="text/css" href="jquery-ui.min.css">-->
   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/humanity/jquery-ui.css" type="text/css" media="all">
-  <title><?php echo htmlspecialchars($title); ?></title>
+  <title>The Distance Machine | <?php echo htmlspecialchars($title); ?></title>
   <script>
 <?php
 
@@ -219,7 +219,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
      This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that uses historical data from Google books to identify words that were uncommon at a given point in time.
     </div>
     <div>
-     Use the controls at the top left to see what words were uncommon in different years or to find words in the text that were omitted from a given dictionary.  When highlighting words by year, you can also click the play button to animate.  Double-click on words in the text to see details, including the full historical usage data and dictionary entries.
+     Use the controls at the top left to see what words were uncommon in different years, to find words in the text that were omitted from a given dictionary, or to find very uncommon words.  When highlighting words by year or frequency, you can also click the play button to animate.  Double-click or tap on words in the text to see details, including the full historical usage data and dictionary entries.
     </div>
     <div>
      <a href="/about" target="_blank">About this program</a>

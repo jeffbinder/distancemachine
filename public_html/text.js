@@ -1075,7 +1075,7 @@ $(window).load(function () {
         $("#save-link").text("Text saved");
     }
     $(".corpus-name").text(corpus_names[corpus]);
-    $(".document-title").text(title);
+    $(".document-title").text("The Distance Machine | " + title);
 
     show_print_link_message();
     $("#print-title").text(title + " (" + corpus_names[corpus] + ")");
