@@ -26,7 +26,7 @@
 }
 
 #status-box {
-    position: absolute;
+    position: fixed;
     width: 174px;
     top: 180px;
     left: 50%;
@@ -40,7 +40,7 @@
 }
 
 #success-box {
-    position: absolute;
+    position: fixed;
     width: 174px;
     top: 180px;
     left: 50%;
@@ -54,7 +54,7 @@
 }
 
 #error-box {
-    position: absolute;
+    position: fixed;
     width: 174px;
     top: 180px;
     left: 50%;
