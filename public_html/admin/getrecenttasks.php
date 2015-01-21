@@ -10,9 +10,9 @@ $query = "
 SELECT title, status, words_completed, cache_hits / words_completed as cache_hit_rate,
     start_time, end_time, id, INET_NTOA(uploader) as uploader, end_time - start_time
 FROM task
-WHERE status IN ('completed', 'saved', 'deleted')
+WHERE status IN ('aborted', 'completed', 'saved', 'deleted')
 ORDER BY end_time DESC
-LIMIT 10
+LIMIT 25
 ";
 
 $result = $mysqli->query($query) or die('Query failed: ' . $mysqli->error);
