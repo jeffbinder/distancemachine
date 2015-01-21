@@ -1,0 +1,68 @@
+.title-area {
+    width: 924px;
+}
+
+#main-area {
+    width: 924px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.admin-box {
+    float: left;
+    width: 420px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    margin-bottom: 20px;
+}
+
+.box-title {
+    font-size: 12pt;
+}
+
+.list {
+    margin-left: 15px;
+}
+
+#status-box {
+    position: absolute;
+    width: 174px;
+    top: 180px;
+    left: 50%;
+    margin-left: -87px;
+    padding: 20px 20px 20px 20px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+    z-index: 1;
+    text-align: left;
+}
+
+#success-box {
+    position: absolute;
+    width: 174px;
+    top: 180px;
+    left: 50%;
+    margin-left: -87px;
+    padding: 20px 20px 20px 20px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+    z-index: 1;
+    text-align: left;
+}
+
+#error-box {
+    position: absolute;
+    width: 174px;
+    top: 180px;
+    left: 50%;
+    margin-left: -87px;
+    padding: 20px 20px 20px 20px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+    display: none;
+    z-index: 1;
+    text-align: left;
+}
