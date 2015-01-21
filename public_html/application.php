@@ -118,6 +118,14 @@ function delete_task_data($id)
     $query->execute() or die('Query failed: ' . $mysqli->error);
 }
 
+function reset_task_start_time($id)
+{
+    global $mysqli;
+    $query = $mysqli->prepare("UPDATE task SET start_time = NOW() WHERE id = ?");
+    $query->bind_param('s', $id);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+}
+
 function update_task_total($id, $total_chars)
 {
     global $mysqli;
