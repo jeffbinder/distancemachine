@@ -103,7 +103,7 @@ function hide_error_box()
 
 $(function () {
     update_all();
-    window.setInterval(update_all, 2000);
+    window.setInterval(update_all, 1000);
 
     $("#main-area").click(function(e) {
         hide_status_box();

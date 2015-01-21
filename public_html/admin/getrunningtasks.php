@@ -8,7 +8,7 @@ mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
 $query = "
 SELECT title, status, words_completed, cache_hits / words_completed as cache_hit_rate,
-    start_time, end_time, id, INET_NTOA(uploader) as uploader, NOW() - start_time
+    start_time, end_time, id, INET_NTOA(uploader) as uploader, timediff(NOW(), start_time), characters_completed * 100 / total_characters
 FROM task
 WHERE status = 'running'
 ORDER BY end_time DESC
@@ -23,12 +23,12 @@ while ($row = $result->fetch_array(MYSQLI_NUM)) {
     }
     $first = false;
     echo "<div><a href='/text/" . $row[6] . "'>" . $row[0] . "</a>";
+    echo sprintf(" (%s)", $row[1]);
     if ($log_ip_addresses) {
         echo sprintf("<br/>uploaded by %s", $row[7]);
     }
-    echo sprintf("<br/>%s", $row[1]);
-    echo sprintf("<br/>%s words - started %s", $row[2], $row[4]);
-    echo sprintf("<br/>running for %s sec", $row[8]);
+    echo sprintf("<br/>started %s - %s words complete (%d%%)", $row[4], $row[2], $row[9]);
+    echo sprintf("<br/>running for %s", $row[8]);
     if ($row[3]) {
         echo sprintf(" - cache hit rate: %d%%\n", intval($row[3] * 100));
     }
