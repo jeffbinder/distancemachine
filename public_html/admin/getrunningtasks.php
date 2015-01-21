@@ -23,7 +23,6 @@ while ($row = $result->fetch_array(MYSQLI_NUM)) {
     }
     $first = false;
     echo "<div><a href='/text/" . $row[6] . "'>" . $row[0] . "</a>";
-    echo sprintf(" (%s)", $row[1]);
     if ($log_ip_addresses) {
         echo sprintf("<br/>uploaded by %s", $row[7]);
     }
