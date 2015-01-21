@@ -44,6 +44,7 @@ function generate()
     var id = generated_id;
     
     var data = {"id": id, "text": text, "title": title, "corpus": corpus};
+    window.generate_aborted = false;
     window.generate_xhr = $.ajax({
         type: "POST",
         url: "gentext.php",
@@ -67,11 +68,13 @@ function generate()
                 }).appendTo("#hidden-form");
                 $("#hidden-form").submit();
             } else {
-		clearInterval(window.progress_timer);
-		$("#input-area button,input,textarea,select").prop("disabled", false);
-		$("#status-box").css("display", "none");
-		$("#error-box").css("display", "inline");
-	    }
+                clearInterval(window.progress_timer);
+                $("#input-area button,input,textarea,select").prop("disabled", false);
+                $("#status-box").css("display", "none");
+                if (!generate_aborted) {
+                    $("#error-box").css("display", "inline");
+                }
+            }
         }
     });
     
@@ -82,6 +85,7 @@ function generate()
 
 function cancel_generation()
 {
+    window.generate_aborted = true;
     window.generate_xhr.abort();
     clearInterval(window.progress_timer);
     $("#input-area button,input,textarea,select").prop("disabled", false);
@@ -182,7 +186,7 @@ $(function () {
     
     $("#word-lookup").keyup(function (e) {
         if (e.which == 13 || e.keyCode == 13) {
-	    lookup_word();
+            lookup_word();
         }
     });
     
