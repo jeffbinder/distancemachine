@@ -16,6 +16,10 @@ $mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
 mysqli_set_charset($mysqli, 'utf8');
 mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
+if ($log_word_lookups) {
+    log_word_lookup($word);
+}
+
 $counts = get_counts($word, $corpus);
 $periods = get_usage_periods($word, $corpus);
 

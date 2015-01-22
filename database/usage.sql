@@ -90,3 +90,9 @@ CREATE TABLE dict_index (
   KEY (lemma)
 );
 
+CREATE TABLE word_lookup_log (
+  time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  word VARCHAR(255) NOT NULL,
+  KEY (time)
+);
+

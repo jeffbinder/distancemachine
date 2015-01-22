@@ -862,6 +862,15 @@ function get_saved_text($id)
   return $data;
 }
 
+function log_word_lookup($word)
+{
+    global $mysqli;
+    $query = $mysqli->prepare("INSERT INTO word_lookup_log (word)
+VALUES (?)");
+    $query->bind_param('s', $word);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+}
+
 function is_lemma($word)
 {
     global $mysqli;
