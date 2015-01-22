@@ -412,21 +412,25 @@ function pop_history()
         hide_word_list();
         hide_stats_box();
         hide_reverse_lookup_box();
+        hide_help_box();
     } else if (popup_history[i][1]) {
         hide_word_info();
         show_word_list(popup_history[i][6]);
         hide_stats_box();
         hide_reverse_lookup_box();
+        hide_help_box();
     } else if (popup_history[i][2]) {
         hide_word_info();
         hide_word_list();
         show_stats_box(popup_history[i][6]);
         hide_reverse_lookup_box();
+        hide_help_box();
     } else if (popup_history[i][3]) {
         hide_word_info();
         hide_word_list();
         hide_stats_box();
         show_reverse_lookup_box(popup_history[i][4], popup_history[i][5], popup_history[i][6]);
+        hide_help_box();
     }
     popup_history.pop();
     if (popup_history.length == 0) {
@@ -1139,7 +1143,7 @@ $(window).load(function () {
         $("#help-cookie-message").css("display", "none");
     } else {
         $.cookie("help-displayed", "yes");
-        show_help_box()
+        show_help_box();
     }
 
     // This is to detect if we are on a touchscreen.
@@ -1220,6 +1224,7 @@ $(window).load(function () {
         show_word_info(word, window.corpus);
         hide_word_list();
         hide_stats_box();
+        hide_help_box();
     });
 
     set_year(current_year);
@@ -1242,6 +1247,7 @@ $(window).load(function () {
             show_word_info(word, window.corpus);
             hide_word_list();
             hide_stats_box();
+            hide_help_box();
             // This is to hide the keyboard on iOS.
             document.activeElement.blur();
             $("input").blur();
