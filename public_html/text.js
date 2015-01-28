@@ -1153,7 +1153,7 @@ $(window).load(function () {
         $("body").off("touchstart");
 
         // Tapping words opens the word info box.
-        $("#text-area span,#text-area div").on("click", function (e) {
+        $("#text-area span,#text-area div,#definition-area,#word-list-area,#reverse-lookup-word-area").on("click", function (e) {
             // Modified from http://jsfiddle.net/Vap7C/80/
             var word = '';
             if (window.getSelection && (sel = window.getSelection()).modify) {
