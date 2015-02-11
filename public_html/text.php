@@ -10,14 +10,14 @@ mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-    $initial_year = $end_year;
+    $initial_year = null;
     $initial_freq = $max_freq;
     $initial_highlight_option = null;
 } else {
     $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
     $initial_year = filter_input(INPUT_GET, 'y', FILTER_SANITIZE_NUMBER_INT);
     if (is_null($initial_year)) {
-        $initial_year = $end_year;
+        $initial_year = null;
     } else {
         $initial_year = (int)$initial_year;
     }
@@ -35,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 }
 
 validate_id($id);
-validate_year($initial_year);
 
 $saved = is_text_saved($id);
 if ($saved) {
@@ -46,6 +45,11 @@ if ($saved) {
 $corpus = $data['corpus'];
 $title = $data['title'];
 $content = $data['content'];
+
+if (is_null($initial_year)) {
+  $initial_year = $end_year[$corpus];
+}
+validate_year($initial_year, $corpus);
 
 ?>
 <html>

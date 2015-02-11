@@ -39,6 +39,7 @@
    <div>
     <a href="howitworks">How it works</a>
     | <a href="examples">Examples</a>
+    | <a href="activity">Recent searches</a>
    </div>
   </div>
   <div class="box" id="input-area">
@@ -55,8 +56,9 @@
     <div style="float:left">
      Choose a corpus:
      <select id="corpus-input" name="corpus">
-      <option value="us">US English</option>
-      <option value="gb">UK English</option>
+      <option value="us">Google Books US English, 1750-2009</option>
+      <option value="gb">Google Books UK English, 1750-2009</option>
+      <option value="eebotcp1">EEBO-TCP Phase I: 25,000 English books, 1500-1700</option>
      </select>
     </div>
     <div style="float:right">
@@ -71,6 +73,7 @@
      <select id="word-lookup-corpus-input" name="corpus">
       <option value="us">US English</option>
       <option value="gb">UK English</option>
+      <option value="eebotcp1">EEBO-TCP Phase I</option>
      </select>
     </div>
   </div>

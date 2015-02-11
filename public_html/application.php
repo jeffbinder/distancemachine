@@ -10,10 +10,10 @@ function validate_id($id)
     }
 }
 
-function validate_year($year)
+function validate_year($year, $corpus)
 {
     global $start_year, $end_year;
-    if (!(is_int($year) && $year >= $start_year && $year <= $end_year)) {
+    if (!(is_int($year) && $year >= $start_year[$corpus] && $year <= $end_year[$corpus])) {
         die("Year out of range.");
     }
 }
@@ -241,7 +241,7 @@ function get_totals($corpus)
     
     $query = $mysqli->prepare("SELECT SQL_CACHE year, ntokens FROM total
 WHERE corpus = ? AND year >= ?");
-    $query->bind_param('si', $corpus, $data_start_year);
+    $query->bind_param('si', $corpus, $data_start_year[$corpus]);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($year, $ntokens);
     while ($query->fetch()) {
@@ -262,7 +262,7 @@ function get_counts($word, $corpus)
     $counts = [];
     $query = $mysqli->prepare("SELECT year, ntokens FROM count
 WHERE word = ? AND corpus = ? AND year >= ?");
-    $query->bind_param('ssi', $word, $corpus, $data_start_year);
+    $query->bind_param('ssi', $word, $corpus, $data_start_year[$corpus]);
     $query->execute() or die('Query failed: ' . $mysqli->error);
     $query->bind_result($year, $count);
     while ($query->fetch()) {

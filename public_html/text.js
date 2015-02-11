@@ -242,9 +242,9 @@ function update_highlight_option()
         $("#play-button").button("enable");
         $("#slider").slider("enable");
         $("#slider").slider({
-            value: end_year,
-            min: start_year,
-            max: end_year,
+            value: end_year[corpus],
+            min: start_year[corpus],
+            max: end_year[corpus],
             slide: function(event, ui) {
                 set_year(parseInt(ui.value));
             }
@@ -311,13 +311,13 @@ function set_freq(freq)
 function animate()
 {
     if (window.highlight_option == "ngrams") {
-        set_year(start_year);
+        set_year(start_year[corpus]);
         if (timer) {
             clearInterval(timer);
         }
         timer = setInterval(function() {
             set_year(current_year + 1);
-            if (current_year >= end_year) {
+            if (current_year >= end_year[corpus]) {
                 clearInterval(timer);
                 update_location();
                 return;
@@ -552,10 +552,10 @@ function update_word_list()
 
         var words = get_words_with_class("absent-word", true);
         if (words.length == 0) {
-            html.push("No words found that were absent from the corpus " + data_start_year + "-.");
+            html.push("No words found that were absent from the corpus " + data_start_year[corpus] + "-.");
         } else {
             html.push(words.length + " " + (words.length > 1 ? "words that are" : "word that is")
-                      + " absent from the corpus altogether (" + data_start_year + "-):<div>");
+                      + " absent from the corpus altogether (" + data_start_year[corpus] + "-):<div>");
             html.push(create_word_grid(words, "absent-word"));
             html.push("</div>");
         }
@@ -632,7 +632,7 @@ function update_word_list_height()
 
 function compute_document_stats()
 {
-    var nyears = end_year - start_year + 1;
+    var nyears = end_year[corpus] - start_year[corpus] + 1;
 
     var stats = {
         "c": new Array(nyears),
@@ -683,19 +683,19 @@ function compute_document_stats()
                     var ch = usage.substr(k+3, 1);
                     if (ch == "x") {
                         var cent = parseInt(usage.substr(k+1, 2)) * 100;
-                        var idx = cent - start_year;
+                        var idx = cent - start_year[corpus];
                         for (var a = 0; a < 100; a++) {
                             stats[usage_state][idx + a] += 1;
                         }
                     } else if (ch == "l") {
                         var cent = parseInt(usage.substr(k+1, 2)) * 100;
-                        var idx = cent - start_year;
+                        var idx = cent - start_year[corpus];
                         for (var a = 0; a < 50; a++) {
                             stats[usage_state][idx + a] += 1;
                         }
                     } else if (ch == "r") {
                         var cent = parseInt(usage.substr(k+1, 2)) * 100;
-                        var idx = cent - start_year;
+                        var idx = cent - start_year[corpus];
                         for (var a = 50; a < 100; a++) {
                             stats[usage_state][idx + a] += 1;
                         }
@@ -703,25 +703,25 @@ function compute_document_stats()
                         ch = usage.substr(k+4, 1);
                         if (ch == "x") {
                             var dec = parseInt(usage.substr(k+1, 3)) * 10;
-                            var idx = dec - start_year;
+                            var idx = dec - start_year[corpus];
                             for (var a = 0; a < 10; a++) {
                                 stats[usage_state][idx + a] += 1;
                             }
                         } else if (ch == "l") {
                             var dec = parseInt(usage.substr(k+1, 3)) * 10;
-                            var idx = dec - start_year;
+                            var idx = dec - start_year[corpus];
                             for (var a = 0; a < 5; a++) {
                                 stats[usage_state][idx + a] += 1;
                             }
                         } else if (ch == "r") {
                             var dec = parseInt(usage.substr(k+1, 3)) * 10;
-                            var idx = dec - start_year;
+                            var idx = dec - start_year[corpus];
                             for (var a = 5; a < 10; a++) {
                                 stats[usage_state][idx + a] += 1;
                             }
                         } else {
                             var y = parseInt(usage.substr(k+1, 4));
-                            var idx = y - start_year;
+                            var idx = y - start_year[corpus];
                             stats[usage_state][idx] += 1;
                         }
                     }
@@ -784,14 +784,14 @@ function compute_document_stats()
 function create_document_x_values()
 {
     window.document_x_values = [];
-    for (var i = start_year; i <= end_year; i++) {
+    for (var i = start_year[corpus]; i <= end_year[corpus]; i++) {
         document_x_values.push(i);
     }
 }
 
 function update_document_stats()
 {
-    var nyears = end_year - start_year + 1;
+    var nyears = end_year[corpus] - start_year[corpus] + 1;
 
     if (!window.document_stats) {
         compute_document_stats();
@@ -816,7 +816,7 @@ function update_document_stats()
         xmargin = 60,
         ymargin = 20,
         y = d3.scale.linear().domain([0, max]).range([h - ymargin, 10]),
-        x = d3.scale.linear().domain([start_year, end_year]).range([xmargin, w - 10]);
+        x = d3.scale.linear().domain([start_year[corpus], end_year[corpus]]).range([xmargin, w - 10]);
 
     var vis = d3.select("#document-chart")
         .append("svg:svg")
@@ -829,7 +829,7 @@ function update_document_stats()
     function add_line(usage_class, color) {
         var line = d3.svg.line()
             .x(function (d) { return x(d); })
-            .y(function (d) { return y(stats[usage_class][d - start_year]); })
+            .y(function (d) { return y(stats[usage_class][d - start_year[corpus]]); })
         g.append("path")
             .datum(document_x_values)
             .style("fill", "none")
@@ -903,13 +903,13 @@ function update_document_stats()
         .attr("dy", 4);
  
     var html = [];
-    html.push("<div><b>" + d3.round(stats["c"][current_year - start_year], 1)
+    html.push("<div><b>" + d3.round(stats["c"][current_year - start_year[corpus]], 1)
               + "</b>% of words in the text are in common use in <b>" + current_year + "</b></div>");
-    html.push("<div><b>" + d3.round(stats["o"][current_year - start_year], 1)
+    html.push("<div><b>" + d3.round(stats["o"][current_year - start_year[corpus]], 1)
               + "</b>% of words are more common <span class='old-word'>earlier</span></div>");
-    html.push("<div><b>" + d3.round(stats["n"][current_year - start_year], 1)
+    html.push("<div><b>" + d3.round(stats["n"][current_year - start_year[corpus]], 1)
               + "</b>% of words are more common <span class='new-word'>later</span></div>");
-    html.push("<div><b>" + d3.round(stats["l"][current_year - start_year], 1)
+    html.push("<div><b>" + d3.round(stats["l"][current_year - start_year[corpus]], 1)
               + "</b>% of words are more common <span class='lapsed-word'>both earlier and later</span></div>");
     $("#selected-year-stats").html(html.join(""));
 
@@ -1098,9 +1098,9 @@ $(window).load(function () {
     }
     
     $("#slider").slider({
-        value: end_year,
-        min: start_year,
-        max: end_year,
+        value: end_year[corpus],
+        min: start_year[corpus],
+        max: end_year[corpus],
         stop: function(event, ui) {
             update_location();
         }

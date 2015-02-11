@@ -31,16 +31,17 @@ function format_freq(freq)
     }
 }
 
-function create_x_values()
+function create_x_values(corpus)
 {
     window.x_values = [];
-    for (var i = data_start_year; i <= data_end_year; i++) {
+    for (var i = data_start_year[corpus]; i <= data_end_year[corpus]; i++) {
         x_values.push(i);
     }
     window.decades = [];
-    for (var i = data_start_year; i <= data_end_year; i += 10) {
+    for (var i = data_start_year[corpus]; i <= data_end_year[corpus]; i += 10) {
         decades.push(i);
     }
+    window.x_values_corpus = corpus;
 }
 
 function compute_word_usage_stats(word, corpus, data)
@@ -48,14 +49,19 @@ function compute_word_usage_stats(word, corpus, data)
     var counts = data['counts'];
     
     var max = 0, total = 0;
-    for (var x = data_start_year; x <= data_end_year; x++) {
-        var y = (counts[x] || 0) / totals[corpus][x];
+    for (var x = data_start_year[corpus]; x <= data_end_year[corpus]; x++) {
+        var y;
+        if ((totals[corpus][x] || 0) == 0) {
+            y = 0;
+        } else {
+            y = (counts[x] || 0) / totals[corpus][x];
+        }
         if (y > max) {
             max = y;
         }
         total += y;
     }
-    var avg = total / (data_end_year - data_start_year + 1);
+    var avg = total / (data_end_year[corpus] - data_start_year[corpus] + 1);
     
     data['avg'] = avg;
     data['max'] = max;
@@ -70,8 +76,8 @@ function update_word_usage_chart(word, corpus, data)
         max = data['max'],
         total = data['total'];
 
-    if (!window.x_values) {
-        create_x_values();
+    if (window.x_values_corpus != corpus) {
+        create_x_values(corpus);
     }
     
     $("#word-usage-chart").html("");
@@ -81,7 +87,7 @@ function update_word_usage_chart(word, corpus, data)
         xmargin = 60,
         ymargin = 20
         y = d3.scale.linear().domain([0, max]).range([h - ymargin, 5]),
-        x = d3.scale.linear().domain([data_start_year, data_end_year]).range([xmargin, w - 10]);
+        x = d3.scale.linear().domain([data_start_year[corpus], data_end_year[corpus]]).range([xmargin, w - 10]);
 
     var vis = d3.select("#word-usage-chart")
         .append("svg:svg")
@@ -94,7 +100,7 @@ function update_word_usage_chart(word, corpus, data)
     var line = d3.svg.area()
         .x(function (d) { return x(d); })
         .y0(h - ymargin)
-        .y1(function (d) { return y((counts[d] || 0) / totals[corpus][d]); })
+        .y1(function (d) { return y(totals[corpus][d] ? (counts[d] || 0) / totals[corpus][d] : 0); })
     
     g.append("svg:path")
         .attr("d", line(x_values));
@@ -112,7 +118,7 @@ function update_word_usage_chart(word, corpus, data)
         .attr("class", "periodLine")
         .attr("x1", function (d) {return x(d[0]);})
         .attr("y1", y(avg))
-        .attr("x2", function (d) {return x(d[1] || data_end_year);})
+        .attr("x2", function (d) {return x(d[1] || data_end_year[corpus]);})
         .attr("y2", y(avg))
         .attr("stroke", "red")
         .attr("stroke-width", "2px")
@@ -126,7 +132,7 @@ function update_word_usage_chart(word, corpus, data)
         .attr("y1", y(avg) - 10)
         .attr("x2", function (d) {return x(d[0]);})
         .attr("y2", y(avg) + 10)
-        .attr("stroke", function (d) {return d[0] == data_start_year ? "none" : "red";})
+        .attr("stroke", function (d) {return d[0] == data_start_year[corpus] ? "none" : "red";})
         .attr("stroke-width", "2px")
         .attr("fill", "none");
     
@@ -134,9 +140,9 @@ function update_word_usage_chart(word, corpus, data)
         .data(periods)
       .enter().append("svg:line")
         .attr("class", "periodRightBar")
-        .attr("x1", function (d) {return x(d[1] || data_end_year);})
+        .attr("x1", function (d) {return x(d[1] || data_end_year[corpus]);})
         .attr("y1", y(avg) - 10)
-        .attr("x2", function (d) {return x(d[1] || data_end_year);})
+        .attr("x2", function (d) {return x(d[1] || data_end_year[corpus]);})
         .attr("y2", y(avg) + 10)
         .attr("stroke", function (d) {return !d[1] ? "none" : "red";})
         .attr("stroke-width", "2px")
@@ -227,7 +233,7 @@ function update_word_usage_text(word, data)
     } else {
         html.push("Avg freq <b>" + format_freq(1.0 / avg) + "</b>. ");
         if (periods.length == 1) {
-            if (periods[0][0] == data_start_year && !periods[0][1]) {
+            if (periods[0][0] == data_start_year[word_info_selected_corpus] && !periods[0][1]) {
                 html.push("In consistent use through the whole period covered");
             } else {
                 html.push("Most frequently used from ");
