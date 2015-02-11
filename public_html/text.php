@@ -160,7 +160,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     <div class="back-button"><a href="javascript:pop_history()">&lt;back</a></div>
     <div>Selected word: <span id="selected-word"></span></div>
     <hr />
-    Frequency in the Google Books <span class="corpus-name"></span> corpus (click to view):
+    Frequency in the <span class="corpus-name"></span> corpus (click to view):
     <div id="word-usage-chart"></div>
     <div><span id="usage-periods-text"></span></div>
     <hr />

@@ -13,9 +13,9 @@ window.prev_first_line_visible = -1;
 window.prev_last_line_visible = -1;
 
 window.corpus_names = {
-    "gb" : "Google Books UK English, 1750-2009",
-    "us" : "Google Books US English, 1750-2009",
-    "eebotcp1" : "EEBO-TCP Phase I: 25,000 English books, 1500-1700"
+    "gb" : "Google Books UK English",
+    "us" : "Google Books US English",
+    "eebotcp1" : "EEBO-TCP Phase I"
 };
 
 // In order of appearance.
