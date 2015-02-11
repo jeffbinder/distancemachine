@@ -212,7 +212,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     </div>
     <div class="key" id="freq-key" style="clear:both">
      <div><span class="rare-word">blue</span> words have average frequency below the selected value</div>
-     <div><span class="absent-word">red</span> words are not found in Google Books at all</div>
+     <div><span class="absent-word">red</span> words are not found in the corpus at all</div>
     </div>
     <div class="key" id="dict-key" style="clear:both">
      <div><span class="omitted-word">red</span> words are omitted from the selected dictionary</div>
@@ -220,7 +220,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
      <div><span class="vulgar-word">yellow</span> words are marked as vulgar, colloquial, or improper</div>
     </div>
     <div>
-     This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that uses historical data from Google books to identify words that were uncommon at a given point in time.
+     This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that uses historical data from Google Books to identify words that were uncommon at a given point in time.
     </div>
     <div>
      Use the controls at the top left to see what words were uncommon in different years, to find words in the text that were omitted from a given dictionary, or to find very uncommon words.  When highlighting words by year or frequency, you can also click the play button to animate.  Double-click or tap on words in the text to see details, including the full historical usage data and dictionary entries.
