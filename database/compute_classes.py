@@ -1,7 +1,9 @@
 import MySQLdb
 
-start_year = 1800
-end_year = 2020
+# Modify this and the "corpus = " bit near the bottom based on what corpus
+# you want to process.
+start_year = 1500
+end_year = 1700
 
 db = MySQLdb.connect(user='words', db='wordusage', charset='utf8')
 c = db.cursor()
@@ -94,6 +96,7 @@ words_done = set([(x, y) for x, y in rows])
 c.execute('''
     SELECT word, corpus
     FROM usage_periods
+    WHERE corpus = 'eebotcp1'
     ''')
 rows = c.fetchall()
 nrows = len(rows)

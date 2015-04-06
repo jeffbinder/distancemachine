@@ -3,14 +3,16 @@ import numpy
 import re
 import scipy.stats
 
-corpora = ('us', 'gb')
+corpora = ('eebotcp1',)
 
 # import matplotlib.pyplot as plt
 
 import MySQLdb
 
-start_year = 1750
-end_year = 2009
+# Modify this and the "corpus = " bit near the bottom based on what corpus
+# you want to process.
+start_year = 1500
+end_year = 1700
 
 db = MySQLdb.connect(user='words', db='wordusage', charset='utf8')
 c = db.cursor()
@@ -45,6 +47,8 @@ def compute_usage_periods(word, corpus, plot=False):
     if min_year < start_year:
         min_year = start_year
     max_year = max(years)
+    if max_year > end_year:
+        max_year = end_year
     nyears = max_year - min_year + 1
     if nyears <= 0:
         return [], 0.0
@@ -159,6 +163,7 @@ words_done = set([(x, y) for x, y in rows])
 c.execute('''
     SELECT DISTINCT word
     FROM count
+    WHERE corpus = 'eebotcp1'
     ''')
 rows = c.fetchall()
 nrows = len(rows)

@@ -10,7 +10,7 @@ import os
 import sys
 
 import MySQLdb
-db = MySQLdb.connect(user='root', db='wordusage', charset='utf8')
+db = MySQLdb.connect(user='words', db='wordusage', charset='utf8')
 c = db.cursor()
 
 from nltk.tokenize import RegexpTokenizer
@@ -36,6 +36,12 @@ for filename in os.listdir('.'):
     toks = tokenizer.tokenize(text)
     ntokens = len(toks)
     for tok in toks:
+        if tok.isspace():
+            continue
+        if len(tok) > 63:
+            continue
+        tok = tok.replace('\\', '\\\\')
+        tok = tok.lower()
         counts.setdefault(tok, {}).setdefault(year, 0)
         counts[tok][year] += 1
 
