@@ -198,9 +198,14 @@ function update_word_usage_chart(word, corpus, data)
         .data(decades)
       .enter().append("svg:a")
         .attr("xlink:href", function (d) {
-            return ('http://www.google.com/search?q="' + word
-                    + '"&tbs=bks:1,cdr:1,cd_min:' + d + ',cd_max:' + (d + 10)
-                    + '&num=100&lr=lang_en');
+            if (corpus == 'eebotcp1') {
+                return ('http://quod.lib.umich.edu/e/eebo?type=boolean&rgn=works&q1=' + word
+                        + '&firstpubl1=' + d + '&firstpubl2=' + (d + 10));
+            } else {
+                return ('http://www.google.com/search?q="' + word
+                        + '"&tbs=bks:1,cdr:1,cd_min:' + d + ',cd_max:' + (d + 10)
+                        + '&num=100&lr=lang_en');
+            }
         })
         .attr("target", "_blank")
       .append("svg:rect")
