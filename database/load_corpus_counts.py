@@ -34,12 +34,13 @@ for filename in os.listdir('.'):
     f = codecs.open(filename, 'r', 'utf-8')
     text = f.read()
     toks = tokenizer.tokenize(text)
-    ntokens = len(toks)
+    ntokens = 0
     for tok in toks:
         if tok.isspace():
             continue
         if len(tok) > 63:
             continue
+        ntokens += 1
         tok = tok.replace('\\', '\\\\')
         tok = tok.lower()
         counts.setdefault(tok, {}).setdefault(year, 0)
