@@ -67,6 +67,7 @@ foreach ($words as $word) {
     $ngrams_data[$corpus][$word] = $classes;
   }
 }
+$query->free_result();
 
 // Needed to get get_dicts_for_word and get_freq_for_word to work right.
 $cache_data = array("dict" => array(), "freq" => array());
