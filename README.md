@@ -7,11 +7,11 @@ The Distance Machine is under the MIT license.  This package incorporates [D3 3.
 
 # The Word Count Data
 
-In order to determine when words come in and go out of common usage, this tool needs information about how frequently each word in the language was used in each year.  The live version of the program does this using data based on Google Books.
+In order to determine when words come in and go out of common usage, this tool needs information about how frequently each word in the language was used in each year.  The live version of the program does this using data based on Google Books and EEBO-TCP.
 
 The script load_googlebooks_data.py is used to load the 1-grams data from Google (available [here](http://storage.googleapis.com/books/ngrams/books/datasetsv2.html)) into a MySQL database.  It is designed to work with the 2012 version of the 1-grams and total_counts files.  This script might also be useful if you are attempting to load the data into MySQL for other applications.  For this script to work, you will need to set up a MySQL database using "usage.sql", and then modify the code so that it has the correct MySQL connection information.
 
-You do not necessarily need to use the data from Google Books; the rest of the system will work with any data in the appropriate format.  However, it should be noted that, for the purpose of finding anachronistic usages, it is more important to have a very large corpus than to have a very accurate one.  Smaller corpora tend to produce spurious results with regard to uncommon words.
+You do not necessarily need to use the data from Google Books; the rest of the system will work with any data in the appropriate format.  The source code also includes scripts for loading data from either plain text or TEI-encoded corpora.  To load word counts from a plain-text corpus, use load_corpus_counts.py; if the corpus is in TEI format, use the script process_tei_corpus.py beforehand to convert it to plain text.  This is the method used to load the EEBO-TCP corpus.
 
 In some versions of MySQL, it is necessary to mess around with the text encoding and collation settings to ensure that accented characters are handled correctly.  If things are working right, you will get different results for these two queries:
 
