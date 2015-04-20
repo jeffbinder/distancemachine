@@ -1,6 +1,5 @@
 window.start_year = {'us': 1800, 'gb': 1800, 'eebotcp1': 1500};
-window.end_year = {'us': new Date().getFullYear(), 'gb': new Date().getFullYear(),
-                   'eebotcp1': 1700};
+window.end_year = {'us': 2009, 'gb': 2009, 'eebotcp1': 1700};
 window.data_start_year = {'us': 1750, 'gb': 1750, 'eebotcp1': 1500};
 window.data_end_year = {'us': 2009, 'gb': 2009, 'eebotcp1': 1700};
 window.min_freq = 10000000000;
