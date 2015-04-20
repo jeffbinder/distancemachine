@@ -84,19 +84,19 @@ function update_word_usage_chart(word, corpus, data)
     var start_year = data_start_year[corpus];
     var period_segments = [];
     if (periods.length) {
-	if (periods[0][0] > data_start_year[corpus]) {
-	    period_segments.push({start: start_year, end: periods[0][0], type: "n"});
+	if (periods[0][0] > start_year) {
+	    period_segments.push({start: start_year, end: periods[0][0] - 0.5, type: "n"});
 	}
 	for (var i = 0; i < periods.length; i++) {
 	    if (i > 0) {
-		period_segments.push({start: periods[i-1][1],
-                                      end: periods[i][0], type: "l"});
+		period_segments.push({start: periods[i-1][1] + 0.5,
+                                      end: periods[i][0] - 0.5, type: "l"});
 	    }
-	    period_segments.push({start: periods[i][0],
-				  end: (periods[i][1] || data_end_year[corpus]), type: "c"});
+	    period_segments.push({start: periods[i][0] - 0.5,
+				  end: (periods[i][1] || data_end_year[corpus]) + 0.5, type: "c"});
 	}
 	if ((periods[periods.length-1][1] || data_end_year[corpus]) < data_end_year[corpus]) {
-	    period_segments.push({start: (periods[periods.length-1][1] || data_end_year[corpus]),
+	    period_segments.push({start: (periods[periods.length-1][1] || data_end_year[corpus]) + 0.5,
 				  end: data_end_year[corpus], type: "o"});
 	}
     }
