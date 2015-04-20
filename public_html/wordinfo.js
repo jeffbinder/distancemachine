@@ -80,6 +80,27 @@ function update_word_usage_chart(word, corpus, data)
         create_x_values(corpus);
     }
     
+    // Convert the usage periods to segments for new, old, lapsed, and current.
+    var start_year = data_start_year[corpus];
+    var period_segments = [];
+    if (periods.length) {
+	if (periods[0][0] > data_start_year[corpus]) {
+	    period_segments.push({start: start_year, end: periods[0][0], type: "n"});
+	}
+	for (var i = 0; i < periods.length; i++) {
+	    if (i > 0) {
+		period_segments.push({start: periods[i-1][1],
+                                      end: periods[i][0], type: "l"});
+	    }
+	    period_segments.push({start: periods[i][0],
+				  end: (periods[i][1] || data_end_year[corpus]), type: "c"});
+	}
+	if ((periods[periods.length-1][1] || data_end_year[corpus]) < data_end_year[corpus]) {
+	    period_segments.push({start: (periods[periods.length-1][1] || data_end_year[corpus]),
+				  end: data_end_year[corpus], type: "o"});
+	}
+    }
+    
     $("#word-usage-chart").html("");
 
     var w = 410,
@@ -101,7 +122,29 @@ function update_word_usage_chart(word, corpus, data)
         .x(function (d) { return x(d); })
         .y0(h - ymargin)
         .y1(function (d) { return y(totals[corpus][d] ? (counts[d] || 0) / totals[corpus][d] : 0); })
-    
+
+    // Segments in background.
+    if (chart_highlight_mode) {
+	g.selectAll(".periodSegment")
+            .data(period_segments)
+	  .enter().append("svg:rect")
+            .attr("x", function (d) {return x(d.start);})
+            .attr("y", function (d) {return 0;})
+            .attr("width", function (d) {return x(d.end) - x(d.start);})
+            .attr("height", function (d) {return h - ymargin;})
+            .attr("fill", function (d) {return d.type == "n" ? "pink" : d.type == "l" ? "#F0E68C" :
+                                               d.type == "o" ? "lightBlue" : "none";});
+    }
+
+    // Chart colored based on the usage model.
+    /*g.selectAll(".periodSegment")
+        .data(period_segments)
+      .enter().append("svg:path")
+        .attr("d", function (d) {return line(x_values.slice(d.start - start_year, d.end - start_year + 1));})
+        .attr("fill", function (d) {return d.type == "n" ? "red" : d.type == "l" ? "orange" :
+                                           d.type == "o" ? "blue" : "black";});*/
+
+    // Entire chart in black.
     g.append("svg:path")
         .attr("d", line(x_values));
     
@@ -112,41 +155,44 @@ function update_word_usage_chart(word, corpus, data)
         .attr("y2", h - ymargin)
         .attr("stroke", "black");
     
-    g.selectAll(".periodLine")
-        .data(periods)
-      .enter().append("svg:line")
-        .attr("class", "periodLine")
-        .attr("x1", function (d) {return x(d[0]);})
-        .attr("y1", y(avg))
-        .attr("x2", function (d) {return x(d[1] || data_end_year[corpus]);})
-        .attr("y2", y(avg))
-        .attr("stroke", "red")
-        .attr("stroke-width", "2px")
-        .attr("fill", "none");
-    
-    g.selectAll(".periodLeftBar")
-        .data(periods)
-      .enter().append("svg:line")
-        .attr("class", "periodLeftBar")
-        .attr("x1", function (d) {return x(d[0]);})
-        .attr("y1", y(avg) - 10)
-        .attr("x2", function (d) {return x(d[0]);})
-        .attr("y2", y(avg) + 10)
-        .attr("stroke", function (d) {return d[0] == data_start_year[corpus] ? "none" : "red";})
-        .attr("stroke-width", "2px")
-        .attr("fill", "none");
-    
-    g.selectAll(".periodRightBar")
-        .data(periods)
-      .enter().append("svg:line")
-        .attr("class", "periodRightBar")
-        .attr("x1", function (d) {return x(d[1] || data_end_year[corpus]);})
-        .attr("y1", y(avg) - 10)
-        .attr("x2", function (d) {return x(d[1] || data_end_year[corpus]);})
-        .attr("y2", y(avg) + 10)
-        .attr("stroke", function (d) {return !d[1] ? "none" : "red";})
-        .attr("stroke-width", "2px")
-        .attr("fill", "none");
+    // Horizontal bar to indicate usage periods.
+    if (!chart_highlight_mode) {
+	g.selectAll(".periodLine")
+            .data(periods)
+	  .enter().append("svg:line")
+            .attr("class", "periodLine")
+            .attr("x1", function (d) {return x(d[0]);})
+            .attr("y1", y(avg))
+            .attr("x2", function (d) {return x(d[1] || data_end_year[corpus]);})
+            .attr("y2", y(avg))
+            .attr("stroke", "red")
+            .attr("stroke-width", "2px")
+            .attr("fill", "none");
+	
+	g.selectAll(".periodLeftBar")
+            .data(periods)
+	  .enter().append("svg:line")
+            .attr("class", "periodLeftBar")
+            .attr("x1", function (d) {return x(d[0]);})
+            .attr("y1", y(avg) - 10)
+            .attr("x2", function (d) {return x(d[0]);})
+            .attr("y2", y(avg) + 10)
+            .attr("stroke", function (d) {return d[0] == data_start_year[corpus] ? "none" : "red";})
+            .attr("stroke-width", "2px")
+            .attr("fill", "none");
+	
+	g.selectAll(".periodRightBar")
+            .data(periods)
+	  .enter().append("svg:line")
+            .attr("class", "periodRightBar")
+            .attr("x1", function (d) {return x(d[1] || data_end_year[corpus]);})
+            .attr("y1", y(avg) - 10)
+            .attr("x2", function (d) {return x(d[1] || data_end_year[corpus]);})
+            .attr("y2", y(avg) + 10)
+            .attr("stroke", function (d) {return !d[1] ? "none" : "red";})
+            .attr("stroke-width", "2px")
+            .attr("fill", "none");
+    }
 
     g.append("svg:line")
         .attr("x1", xmargin)

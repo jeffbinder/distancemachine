@@ -12,6 +12,10 @@ window.last_line_visible = -1;
 window.prev_first_line_visible = -1;
 window.prev_last_line_visible = -1;
 
+// Set to true to show usage periods with colored blocks behind the frequency
+// charts, false to show them using horizontal bars.
+window.chart_highlight_mode = false;
+
 window.corpus_names = {
     "gb" : "Google Books UK English",
     "us" : "Google Books US English",
