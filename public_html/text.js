@@ -293,6 +293,9 @@ function set_year(year)
     if (window.stats_box_visible) {
         update_document_stats();
     }
+    if (window.word_info_visible) {
+        update_word_usage_chart();
+    }
 }
 
 function set_freq(freq)
@@ -861,7 +864,7 @@ function update_document_stats()
         .attr("y1", h - ymargin)
         .attr("x2", x(current_year))
         .attr("y2", 0)
-        .attr("stroke", "black");
+        .attr("stroke", "#c5b390");
     
     g.selectAll(".xTick")
         .data(x.ticks(5))

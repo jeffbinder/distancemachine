@@ -70,6 +70,16 @@ function compute_word_usage_stats(word, corpus, data)
 
 function update_word_usage_chart(word, corpus, data)
 {
+    if (!word) {
+	word = window.last_word_usage_chart_word;
+	corpus = window.last_word_usage_chart_corpus;
+	data = window.last_word_usage_chart_data;
+    } else {
+	window.last_word_usage_chart_word = word;
+	window.last_word_usage_chart_corpus = corpus;
+	window.last_word_usage_chart_data = data;
+    }
+
     var counts = data['counts'],
         periods = data['periods'],
         avg = data['avg'],
@@ -239,6 +249,15 @@ function update_word_usage_chart(word, corpus, data)
         .attr("y", y)
         .attr("text-anchor", "end")
         .attr("dy", 4);
+
+    if ('current_year' in window) {
+	g.append("svg:line")
+            .attr("x1", x(current_year))
+            .attr("y1", h - ymargin)
+            .attr("x2", x(current_year))
+            .attr("y2", 0)
+            .attr("stroke", "#c5b390");
+    }
 
     g.selectAll(".decade")
         .data(decades)
