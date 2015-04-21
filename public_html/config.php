@@ -3,7 +3,7 @@
 date_default_timezone_set('America/New_York'); 
 
 $start_year = ['us' => 1800, 'gb' => 1800, 'eebotcp1' => 1500];
-$end_year = ['us' => (int)date("Y"), 'gb' => (int)date("Y"), 'eebotcp1' => 1700];
+$end_year = ['us' => 2009, 'gb' => 2009, 'eebotcp1' => 1700];
 $data_start_year = ['us' => 1750, 'gb' => 1750, 'eebotcp1' => 1500];
 $data_end_year = ['us' => 2009, 'gb' => 2009, 'eebotcp1' => 1700];
 
