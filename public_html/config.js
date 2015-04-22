@@ -5,7 +5,6 @@ window.data_end_year = {'us': 2009, 'gb': 2009, 'eebotcp1': 1700};
 window.min_freq = 10000000000;
 window.max_freq = 1000000;
 
-window.current_year = 1985;
 window.first_line_visible = -1;
 window.last_line_visible = -1;
 window.prev_first_line_visible = -1;
