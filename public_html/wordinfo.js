@@ -259,18 +259,28 @@ function update_word_usage_chart(word, corpus, data)
             .attr("stroke", "#c5b390");
     }
 
+    g.append("svg:rect")
+        .attr("x", xmargin)
+        .attr("y", 0)
+        .attr("height", h - ymargin)
+        .attr("width", w - 10)
+        .attr("fill", "none")
+        .style("pointer-events", "all")
+        .on("mousemove", function (d) {
+	    var mouse_x = x.invert(d3.mouse(this)[0]);
+	    update_hovertext(mouse_x);
+        })
+        .on("mouseout", function (d) {
+            hide_hovertext();
+        });
+
     g.selectAll(".decade")
         .data(decades)
       .enter().append("svg:a")
         .attr("xlink:href", function (d) {
-            if (corpus == 'eebotcp1') {
-                return ('http://quod.lib.umich.edu/e/eebo?type=boolean&rgn=works&q1=' + word
-                        + '&firstpubl1=' + d + '&firstpubl2=' + (d + 10));
-            } else {
-                return ('http://www.google.com/search?q="' + word
-                        + '"&tbs=bks:1,cdr:1,cd_min:' + d + ',cd_max:' + (d + 10)
-                        + '&num=100&lr=lang_en');
-            }
+            return ('http://www.google.com/search?q="' + word
+                    + '"&tbs=bks:1,cdr:1,cd_min:' + d + ',cd_max:' + (d + 10)
+                    + '&num=100&lr=lang_en');
         })
         .attr("target", "_blank")
       .append("svg:rect")
@@ -286,7 +296,56 @@ function update_word_usage_chart(word, corpus, data)
         })
         .on("mouseout", function (d) {
             d3.select(this).style("opacity", 0);
+	    hide_hovertext()
+        })
+        .on("mousemove", function (d) {
+	    var mouse_x = x.invert(d3.mouse(this)[0]);
+            update_hovertext(mouse_x);
         });
+
+    var hoverbox = g.append("svg:rect")
+        .attr("class", "hoverbox")
+        .attr("fill", "white")
+        .attr("stroke", "black")
+        .style("visibility", "hidden")
+        .style("pointer-events", "none");
+    var hovertext = g.append("svg:text")
+        .attr("class", "hovertext")
+        .text("test")
+        .style("visibility", "hidden")
+        .style("pointer-events", "none");
+    function update_hovertext(mouse_x) {
+	if (mouse_x > end_year[corpus]) {
+	    return;
+	}
+	var data_x = Math.round(mouse_x);
+	var data_y = totals[corpus][data_x]
+                       ? (counts[data_x] || 0) / totals[corpus][data_x] : 0;
+        hovertext
+            .attr("x", x(data_x) + 4)
+            .attr("y", y(data_y) - 8)
+	    .text(data_x + ": " + data_y.toExponential(1))
+            .style("visibility", "visible");
+	var bbox = hovertext.node().getBBox();
+	if (bbox.y < 4) {
+	    bbox.y = 4;
+            hovertext.attr("y", bbox.height)
+	}
+	if (bbox.x + bbox.width + 5 > w) {
+	    bbox.x = w - bbox.width - 5;
+            hovertext.attr("x", w - bbox.width - 5)
+	}
+	hoverbox
+	    .attr("x", bbox.x - 4)
+	    .attr("y", bbox.y - 2)
+	    .attr("width", bbox.width + 8)
+	    .attr("height", bbox.height + 4)
+            .style("visibility", "visible");
+    }
+    function hide_hovertext() {
+        hovertext.style("visibility", "hidden");
+	hoverbox.style("visibility", "hidden");
+    }
 }
 
 function update_word_usage_text(word, data)
