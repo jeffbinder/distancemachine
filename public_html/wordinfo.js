@@ -131,7 +131,7 @@ function update_word_usage_chart(word, corpus, data)
     var line = d3.svg.area()
         .x(function (d) { return x(d); })
         .y0(h - ymargin)
-        .y1(function (d) { return y(totals[corpus][d] ? (counts[d] || 0) / totals[corpus][d] : 0); })
+        .y1(function (d) { return y(totals[corpus][d] ? (counts[d] || 0) / totals[corpus][d] : 0); });
 
     // Segments in background.
     if (chart_highlight_mode) {
@@ -278,11 +278,9 @@ function update_word_usage_chart(word, corpus, data)
         .data(decades)
       .enter().append("svg:a")
         .attr("xlink:href", function (d) {
-            return ('http://www.google.com/search?q="' + word
-                    + '"&tbs=bks:1,cdr:1,cd_min:' + d + ',cd_max:' + (d + 10)
-                    + '&num=100&lr=lang_en');
+            return get_search_url(word, d, d + 10);
         })
-        .attr("target", "_blank")
+        .attr("target", archive ? corpus + "_search" : "_blank")
       .append("svg:rect")
         .attr("class", "decade")
         .attr("x", x)
@@ -494,6 +492,12 @@ window.last_request_id = 0;
 function show_word_info(word, corpus, scroll_top)
 {
     $("#selected-word").text(word);
+    $("#word-search-link").attr("href", get_search_url(word));
+    if (archive) {
+	$("#word-search-link").attr("target", corpus + "_search");
+    } else {
+	$("#word-search-link").attr("target", "_blank");
+    }
     $("#word-usage-chart").html("<div id='word-info-loading-message'>Loading...</div>");
     $("#usage-periods-text").html("");
     $("#definitions").html("");
@@ -597,3 +601,33 @@ function hide_reverse_lookup_box()
     $("#reverse-lookup-box").css("display", "none");
     window.reverse_lookup_box_visible = false;
 }
+
+$(function () {
+    if (archive) {
+	window.get_search_url = function (word, start_year, end_year)
+	{
+	    var url = '/archive/' + corpus + '/search?q=' + word;
+	    if (start_year) {
+		url += '&ymin=' + start_year;
+	    }
+	    if (end_year) {
+		url += '&ymax=' + end_year;
+	    }
+	    return url;
+	}
+    } else {
+	window.get_search_url = function (word, start_year, end_year)
+	{
+	    var url = ('http://www.google.com/search?q="' + word
+		       + '"&tbs=bks:1,cdr:1');
+	    if (start_year) {
+		url += ',cd_min:' + start_year;
+	    }
+	    if (end_year) {
+		url += ',cd_max:' + end_year;
+	    }
+	    url += '&num=100&lr=lang_en';
+	    return url;
+	}
+    }
+});

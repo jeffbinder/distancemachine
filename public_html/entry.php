@@ -23,6 +23,9 @@
   <link rel="stylesheet" type="text/css" href="wordinfo.css">
   <link rel="stylesheet" type="text/css" href="entry.css">
   <title>The Distance Machine</title>
+  <script>
+archive = false;
+  </script>
  </head>
  <body>
  <div id="main-area">

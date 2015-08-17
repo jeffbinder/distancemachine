@@ -22,6 +22,11 @@ $dict_db_name = 'dict';
 $log_ip_addresses = false;
 $log_word_lookups = true;
 
+$archive_mode = false;
+$archive_dir = '/var/distancemachine/archive/';
+$excerpt_length = 40;
+$num_excerpts = 15;
+
 $corpora = ['us', 'gb', 'eebotcp1'];
 
 $dicts = [];

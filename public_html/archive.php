@@ -3,51 +3,49 @@
 
 include 'application.php';
 
+check_archive_mode();
+
 $mysqli = mysqli_connect($mysql_server, $mysql_username, $mysql_passwd)
   or die('Could not connect: ' . $mysqli->connect_error);
 mysqli_set_charset($mysqli, 'utf8');
 mysqli_select_db($mysqli, $main_db_name) or die('Could not select database');
 
-if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+$corpus = filter_input(INPUT_GET, 'corpus', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+$uri = filter_input(INPUT_GET, 'uri', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+$initial_year = filter_input(INPUT_GET, 'y', FILTER_SANITIZE_NUMBER_INT);
+if (is_null($initial_year)) {
     $initial_year = null;
+} else {
+    $initial_year = (int)$initial_year;
+}
+$initial_freq = filter_input(INPUT_GET, 'f', FILTER_SANITIZE_NUMBER_INT);
+if (is_null($initial_freq)) {
     $initial_freq = $max_freq;
-    $initial_highlight_option = null;
 } else {
-    $id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-    $initial_year = filter_input(INPUT_GET, 'y', FILTER_SANITIZE_NUMBER_INT);
-    if (is_null($initial_year)) {
-        $initial_year = null;
-    } else {
-        $initial_year = (int)$initial_year;
-    }
-    $initial_freq = filter_input(INPUT_GET, 'f', FILTER_SANITIZE_NUMBER_INT);
-    if (is_null($initial_freq)) {
-        $initial_freq = $max_freq;
-    } else {
-        $initial_freq = (int)$initial_freq;
-    }
-    $initial_highlight_option = filter_input(INPUT_GET, 'd', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-    if ($initial_highlight_option && $initial_highlight_option != "freq") {
-        validate_dict($initial_highlight_option);
-        $initial_highlight_option = 'dict-' . $initial_highlight_option;
-    }
+    $initial_freq = (int)$initial_freq;
 }
-
-validate_id($id);
-
-$saved = is_text_saved($id);
-if ($saved) {
-    $data = get_saved_text($id);
-} else {
-    $data = get_text_from_tmp_file($id);
+$initial_highlight_option = filter_input(INPUT_GET, 'd', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+if ($initial_highlight_option && $initial_highlight_option != "freq") {
+    validate_dict($initial_highlight_option);
+    $initial_highlight_option = 'dict-' . $initial_highlight_option;
 }
-$corpus = $data['corpus'];
-$title = $data['title'];
-$content = $data['content'];
+$q = filter_input(INPUT_GET, 'q', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+if ($q) {
+    $q = htmlspecialchars_decode($q);
+}
+$qi = filter_input(INPUT_GET, 'qi', FILTER_VALIDATE_INT);
+
+validate_corpus($corpus);
+validate_archive_uri($corpus, $uri);
+
+$metadata = get_text_metadata($corpus, $uri);
+$title = $metadata['title'];
+$pub_year = $metadata['pub_year'];
+
+$content = get_text_content($corpus, $uri);
 
 if (is_null($initial_year)) {
-  $initial_year = $end_year[$corpus];
+  $initial_year = $pub_year;
 }
 validate_year($initial_year, $corpus);
 
@@ -83,23 +81,27 @@ validate_year($initial_year, $corpus);
   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/humanity/jquery-ui.css" type="text/css" media="all">
   <title>The Distance Machine | <?php echo htmlspecialchars($title); ?></title>
   <script>
-archive = false;
+archive = true;
+id = null;
+saved = true;
 <?php
 
-echo "id = " . json_encode($id) . ";\n";
+echo "uri = " . json_encode($uri) . ";\n";
 echo "initial_year = " . json_encode($initial_year) . ";\n";
 echo "initial_freq = " . json_encode($initial_freq) . ";\n";
 echo "initial_highlight_option = " . json_encode($initial_highlight_option) . ";\n";
 echo "corpus = " . json_encode($corpus) . ";\n";
 echo "title = " . json_encode($title) . ";\n";
-echo "saved = " . json_encode($saved) . ";\n";
 
 // Preload the total word counts, since they may be used multiple times.
 $totals = [$corpus => get_totals($corpus)];
 echo "totals = " . json_encode($totals) . ";\n";
 
 // Get the word count of the text.
-echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
+echo "word_count = " . json_encode(get_text_word_count($corpus, $uri)) . ";\n";
+
+echo "q = " . json_encode($q) . ";\n";
+echo "qi = " . json_encode($qi) . ";\n";
 
 ?>
   </script>
@@ -112,6 +114,11 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
    <div id="option-area" style="float:left">
     <div>
      <select id="highlight-option">
+<?php
+if ($q) {
+    echo "<option value='q'>Highlighting search terms: " . $q . "</option>";
+}
+?>
        <option value="ngrams">Highlighting words that are more common earlier or later than:</option>
        <option value="freq">Highlighting words with avg frequency less than:</option>
       </select>
@@ -126,8 +133,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
    <div id="option-area-right" style="float:right">
     <div style="float:right;margin-right:19px;margin-top:2px;margin-bottom:3px">
      <a href="javascript:show_help_box()">Help</a> &ndash;
-     <a href="javascript:print_text()">Print</a> &ndash;
-     <a href="javascript:save_text()" id="save-link">Save this text</a>
+     <a href="javascript:print_text()">Print</a>
     </div>
     <div id="controls" style="clear:both;text-align:right">
      <div style="margin-top:2px;padding-left:3px">
@@ -151,7 +157,12 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     </div>
    </div>
    <div id="text-area">
-    <?php echo $content; ?>
+    <?php
+if ($q) {
+    $content = highlight_search_terms($content, $q);
+}
+echo $content;
+?>
    </div>
    <div id="use-print-link-message">
     To print texts created using the Distance Machine, please use the &ldquo;Print&rdquo; link in the upper-right corner.
@@ -200,6 +211,7 @@ echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
     <div><span id="word-list-option-text"></span></div>
     <hr />
     <div id="word-list-area"></div>
+    <div id="search-result-controls-area"></div>
   </div>
   <div id="save-error-box">
     <div>The server encountered an error saving the text.</div>

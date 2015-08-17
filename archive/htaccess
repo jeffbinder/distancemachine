@@ -1,0 +1,4 @@
+RewriteRule ^/archive/.*/(.*)\.(.*) /$1.$2 [L]
+RewriteRule ^/archive/.*/search/(.*)\.(.*) /$1.$2 [L]
+RewriteRule ^/archive/(.*)/search?(.*) /search.php?corpus=$1&$2 [L]
+RewriteRule ^/archive/(.*)/(.*) /archive.php?corpus=$1&uri=$2 [QSA,L]

@@ -1,16 +1,13 @@
-# Loads word count data from a full-text corpus.  Files must be in the current
-# directory; the corpus name must be specified on the command line.
-#
-# Files should be plain text, with the publication year as the first 4
-# characters of the name.  To load TEI-encoded texts, use the script
-# process_tei_corpus.py.
+# Loads word count data from a full-text corpus.  This is similar to the version included
+# in the database directory, except it uses the metadata file created by
+# extract_metadata.py instead of finding the dates in the filenames.
 
 import codecs
 import os
 import sys
 
 import MySQLdb
-db = MySQLdb.connect(user='words', db='wordusage', charset='utf8')
+db = MySQLdb.connect(user='words', db='wordusage2', charset='utf8')
 c = db.cursor()
 
 from nltk.tokenize import RegexpTokenizer
@@ -18,24 +15,28 @@ tokenizer = RegexpTokenizer(r'[\w&]([\w&\']*[\w&])?|\S|\s')
 
 try:
     corpus = str(sys.argv[1])
+    metadata_file = str(sys.argv[2])
 except IndexError:
-    print 'Specify the corpus name.'
+    print 'Specify the corpus name and metadata file.'
     exit()
+    
+years = {}
+f = codecs.open(metadata_file, 'r', 'utf-8')
+for row in f.readlines():
+    id, year = row.strip().split('\t')[:2]
+    years[id] = year
 
 counts = {}
 totals = {}
 
 for filename in os.listdir('.'):
-    if filename == 'FILES_DOWNLOADED':
+    print filename
+    id = filename.split('.')[0]
+    year = years[id]
+    try:
+        year = int(year)
+    except ValueError:
         continue
-    #print filename
-    if filename[0] == '[':
-        year = filename[1:5]
-    else:
-        year = filename[:4]
-    year = year.replace('u', '0')
-    year = year.replace('-', '0')
-    year = int(year)
 
     f = codecs.open(filename, 'r', 'utf-8')
     text = f.read()

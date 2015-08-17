@@ -1,0 +1,20 @@
+#search-box {
+    width: 600px;
+    font-size: 16px;
+}
+
+#result-box {
+    margin-top: 40px;
+}
+
+#ymin-box,#ymax-box {
+    width: 40px;
+}
+
+.search-result {
+    margin-bottom: 40px;
+}
+
+#search-chart {
+    margin-top: 10px;
+}

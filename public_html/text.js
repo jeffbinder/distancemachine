@@ -55,6 +55,10 @@ function log10(x)
 // whole_document = true, it updates everything.
 function update_highlighting(refresh, whole_document)
 {
+    if (window.highlight_option == "q") {
+        return;
+    }
+    
     var year = current_year;
 
     // Determine which lines need to be updated.
@@ -265,6 +269,32 @@ function update_highlight_option()
             }
         });
         $("#slider-value-area").css("color", "black");
+    } else if (window.highlight_option == "q") {
+        $("#ngrams-key").css("display", "none");
+        $("#freq-key").css("display", "none");
+        $("#dict-key").css("display", "none");
+        $("#play-button").button("disable");
+        $("#slider").slider("disable");
+        $("#slider-value-area").css("color", "grey");
+        $("#print-header-text").html("Highlighting search terms " + q);
+        
+        // All highlights created immediately
+        for (var i = 0; i <= window.lines.length - 1; i++) {
+            var line = lines[i];
+            var children = line.getElementsByTagName("span");
+            var nchildren = children.length;
+            for (var j = 0; j < nchildren; j++) {
+                var child = children[j];
+                var d = child.getAttribute("data-q");
+                if (d) {
+                    if (d == "q") {
+                        child.className = "query-word";
+                        continue;
+                    }
+                }
+                child.className = "";
+            }
+        }
     } else {
         var dict = window.highlight_option.substring(5);
         $("#ngrams-key").css("display", "none");
@@ -488,6 +518,38 @@ function create_word_grid(words, css_class)
     return html.join("");
 }
 
+function update_search_result_highlight(animate)
+{
+    search_result_highlights.removeClass("query-highlight-word");
+    $(search_result_highlights[current_search_result_highlight]).addClass("query-highlight-word");
+    $("#current-highlight").text(current_search_result_highlight + 1);
+    if (animate) {
+        $("#main-area").stop().animate({
+            scrollTop: $(".query-highlight-word").position().top - 100
+        }, 250);
+    } else {
+        $("#main-area").scrollTop($(".query-highlight-word").position().top - 100);
+    }
+}
+
+function prev_search_result()
+{
+    current_search_result_highlight -= 1;
+    if (current_search_result_highlight < 0) {
+        current_search_result_highlight = search_result_highlights.length - 1;
+    }
+    update_search_result_highlight(true);
+}
+
+function next_search_result()
+{
+    current_search_result_highlight += 1;
+    if (current_search_result_highlight >= search_result_highlights.length) {
+        current_search_result_highlight = 0;
+    }
+    update_search_result_highlight(true);
+}
+
 function update_word_list()
 {
     var option_text;
@@ -495,6 +557,8 @@ function update_word_list()
         option_text = "The following words were marked as more common earlier or later than <b>" + window.current_year + "</b>.";
     } else if (window.highlight_option == "freq") {
         option_text = "The following words were marked as rare in the " + corpus_names[corpus] + " corpus (excluding words with apostrophes).";
+    } else if (window.highlight_option == "q") {
+        option_text = "Highlighting words based on the search query <b>" + q + "</b>";
     } else {
         var dict = window.highlight_option.substring(5);
         option_text = "The following words were highlighted based on <b>" + dict_names[dict][1] + "</b>.";
@@ -563,6 +627,21 @@ function update_word_list()
             html.push("</div>");
         }
 
+    } else if (window.highlight_option == "q") {
+
+        window.search_result_highlights = $(".query-word");
+        var nhighlights = search_result_highlights.length;
+        if (nhighlights == 0) {
+            html.push("No matches found.");
+        } else {
+            html.push("<div style='float:left'><a href='javascript:prev_search_result()'>&lt;Previous</a></div>");
+            html.push("<div style='float:right'><a href='javascript:next_search_result()'>Next&gt;</a></div>");
+            html.push("<div style='text-align:center'><b>");
+            html.push("<span id='current-highlight'>" + (current_search_result_highlight + 1)
+                      + "</span>/" + nhighlights + "</b></div>");
+            update_search_result_highlight();
+        }
+
     } else {
 
         words = get_words_with_class("obsolete-word");
@@ -600,7 +679,13 @@ function update_word_list()
     }
 
     html = html.join("");
-    $("#word-list-area").html(html);
+    if (window.highlight_option == "q") {
+        $("#word-list-area").html("");
+        $("#search-result-controls-area").html(html);
+    } else {
+        $("#word-list-area").html(html);
+        $("#search-result-controls-area").html("");
+    }
 
     update_word_list_height();
 }
@@ -623,6 +708,7 @@ function hide_word_list()
 {
     $("#word-list").css("display", "none");
     window.word_list_visible = false;
+    search_result_highlights.removeClass("query-highlight-word");
 }
 
 function update_word_list_height()
@@ -989,8 +1075,14 @@ function get_base_url()
         highlight_option_str = "&d=" + window.highlight_option.substring(5);
     } else if (window.highlight_option == "freq") {
         highlight_option_str = "&d=freq";
+    } else if (window.highlight_option == "q") {
+        highlight_option_str = "&q=" + q;
     }
-    return "/text/" + id + "?y=" + current_year + "&f=" + current_freq + highlight_option_str;
+    if (archive) {
+	return "/archive/" + corpus + "/" + uri + "?y=" + current_year + "&f=" + current_freq + highlight_option_str;
+    } else {
+	return "/text/" + id + "?y=" + current_year + "&f=" + current_freq + highlight_option_str;
+    }
 }
 
 function get_url()
@@ -1307,11 +1399,18 @@ $(window).load(function () {
     
     // Periodically touch the tmp file as long as the page is open so it doesn't get
     // culled.
-    var timer = setInterval(function() {
-        if (!saved) {
-            $.post("touchtmpfile.php", {"id": id}, function(d) {}, "json");
-        }
-    }, 600000);
+    if (!archive) {
+	var timer = setInterval(function() {
+            if (!saved) {
+		$.post("touchtmpfile.php", {"id": id}, function(d) {}, "json");
+            }
+	}, 600000);
+    }
     
     $("#header-loading").css("display", "none");
+    
+    if (q) {
+        window.current_search_result_highlight = parseInt(qi || 0);
+        show_word_list();
+    }
 });

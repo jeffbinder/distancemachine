@@ -2,6 +2,31 @@
 
 include 'config.php';
 
+function load_stopwords()
+{
+    global $mysqli;
+    global $stopwords;
+    if ($stopwords) {
+        return;
+    }
+    
+    $query = $mysqli->prepare("SELECT * FROM INFORMATION_SCHEMA.INNODB_FT_DEFAULT_STOPWORD");
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($word);
+    
+    $stopwords = [];
+    while ($query->fetch()) {
+        $stopwords[] = $word;
+    }
+}
+
+function is_stopword($word)
+{
+    global $stopwords;
+    load_stopwords();
+    return in_array($word, $stopwords);
+}
+
 function validate_id($id)
 {
     if (!(is_string($id) && preg_match('/^[A-Za-z0-9]+$/', $id) && strlen($id) <= 9
@@ -273,6 +298,29 @@ WHERE word = ? AND corpus = ? AND year >= ?");
     return $counts;
 }
 
+// Get the counts for a word in each decade.
+function get_decade_counts($word, $corpus)
+{
+    global $mysqli;
+    global $data_start_year;
+    
+    $word = mb_strtolower($word, "UTF-8");
+    $counts = [];
+    $query = $mysqli->prepare("SELECT floor(year / 10) * 10, sum(ntokens)
+FROM count
+WHERE word = ? AND corpus = ? AND year >= ?
+GROUP BY floor(year / 10) * 10");
+    $query->bind_param('ssi', $word, $corpus, $data_start_year[$corpus]);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($year, $count);
+    while ($query->fetch()) {
+        $counts[(int)$year] = (int)$count;
+    }
+    $query->free_result();
+    
+    return $counts;
+}
+
 function parse_year($str)
 {
     if ($str == "") {
@@ -457,9 +505,9 @@ WHERE headword = ? AND dict = ?");
         $first_lemma = true;
         foreach ($lemmas as $lemma) {
             $headword = $lemma[0];
-	        if (!in_array($headword, $lemmas_in_dict[$dict])) {
-	            continue;
-	        }
+                if (!in_array($headword, $lemmas_in_dict[$dict])) {
+                    continue;
+                }
             $lemma_usage_notes = [];
             $query->bind_param('ss', $headword, $dict);
             $query->execute() or die('Query failed: ' . $mysqli->error);
@@ -517,7 +565,8 @@ WHERE word = ? AND corpus = ?");
 }
 
 // Generates the main content of an annotated text, saving it to
-// the tmpdir and updating the database accordingly.
+// the tmpdir and updating the database accordingly.  If $id is null,
+// returns the text rather than saving it.
 function gen_annotated_text($id, $text, $title, $corpus, $offline)
 {
   global $max_linelen;
@@ -527,12 +576,16 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
   global $running;
   
   $running = true;
-  register_shutdown_function("set_task_aborted_if_running", $id);
-  set_task_data($id, $title, $corpus);
-  set_task_running($id);
+  if ($id) {
+    register_shutdown_function("set_task_aborted_if_running", $id);
+    set_task_data($id, $title, $corpus);
+    set_task_running($id);
+  }
   
   $textlen = strlen($text);
-  update_task_total($id, $textlen);
+  if ($id) {
+    update_task_total($id, $textlen);
+  }
   
   load_cache();
 
@@ -557,7 +610,7 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
     if ($newprogress > $progress) {
         $progress = $newprogress;
         
-        if (!$offline) {
+        if ($id && !$offline) {
             // The point of this is to ensure that the server will notice and shut this
             // script down if no one's listening anymore.
             echo ' ';
@@ -568,8 +621,12 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
             }
         }
         
-        // Save the task data so that the page can update the progress bar.
-        update_task_progress($id, $pos, $nwords, $nlines, $nannotations, $cache_hits);
+        if ($id) {
+          // Save the task data so that the page can update the progress bar.
+          update_task_progress($id, $pos, $nwords, $nlines, $nannotations, $cache_hits);
+        } else {
+          echo $pos . " / " . $textlen . "\n";
+        }
     }
     
     // These functions are not UTF-8-aware, but it's okay because we're only splitting on
@@ -622,7 +679,7 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
                 $inv_freq = round(1.0 / $freq);
             }
           $content .= sprintf("<span data-usage='%s' data-dicts='%s' data-freq='%s'>%s</span>",
-			      $classes, $dicts, $inv_freq,
+                              $classes, $dicts, $inv_freq,
                               htmlspecialchars($word, ENT_QUOTES));
           $nannotations += 1;
         } else {
@@ -684,12 +741,16 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
   }
   $content .= "</div>\n";
   
-  update_task_progress($id, $textlen, $nwords, $nlines, $nannotations, $cache_hits);
-  
-  save_text_to_tmp_file($id, $content, $title, $corpus);
-  
-  set_task_completed($id);
+  if ($id) {
+    update_task_progress($id, $textlen, $nwords, $nlines, $nannotations, $cache_hits);
+    save_text_to_tmp_file($id, $content, $title, $corpus);
+    set_task_completed($id);
+  }
   $running = false;
+
+  if (!$id) {
+    return ['content' => $content, 'word_count' => $nwords];
+  }
 }
 
 // Strips out all the annotations/HTML character refs added by the above.
@@ -1117,6 +1178,269 @@ WHERE dict_index.dict = ? AND dict_index.lemma = ?
     mysqli_select_db($mysqli, $wordnet_db_name) or die('Could not select database');
     
     return array_values(array_unique($headwords));
+}
+
+// Functions for archival mode
+
+function check_archive_mode()
+{
+  global $archive_mode;
+  if (!$archive_mode) {
+        die("Archive mode is not enabled!");
+    }
+}
+
+function validate_archive_uri($corpus, $uri)
+{
+    if (!(is_string($corpus) && preg_match('/^[A-Za-z0-9]+$/', $corpus) && strlen($corpus) <= 255
+          && is_string($uri) && preg_match('/^[A-Za-z0-9]+$/', $uri) && strlen($uri) <= 255
+          && is_uri_registered($corpus, $uri))) {
+        die("This text could not be found.");
+    }
+}
+
+function validate_search_string($q)
+{
+  if (!(is_string($q) && strlen($q) <= 1000)) {
+        die("Invalid search query.");
+    }
+}
+
+function is_uri_registered($corpus, $uri)
+{
+    global $mysqli;
+    $query = $mysqli->prepare("SELECT uri FROM text WHERE corpus = ? AND uri = ?");
+    $query->bind_param('ss', $corpus, $uri);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->store_result();
+    return (bool)($query->num_rows > 0);
+}
+
+function create_text_entry($corpus, $uri, $title, $author, $year, $word_count, $text)
+{
+    global $mysqli;
+    // Unfortunately MySQL doesn't support 4-byte unicode characters, so we strip them out.
+    $text = preg_replace('/[\xF0-\xF7].../s', '', $text);
+    $query = $mysqli->prepare("INSERT INTO text
+(corpus, uri, title, author, pub_year, word_count, text)
+VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $query->bind_param('ssssdss', $corpus, $uri, $title, $author, $year, $word_count, $text);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+}
+
+function get_text_metadata($corpus, $uri)
+{
+    global $mysqli;
+    $query = $mysqli->prepare("SELECT title, author, pub_year FROM text WHERE corpus = ? AND uri = ?");
+    $query->bind_param('ss', $corpus, $uri);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($title, $author, $pub_year);
+    $query->fetch();
+    return ['title' => $title, 'author' => $author, 'pub_year' => $pub_year];
+}
+
+function get_text_content($corpus, $uri)
+{
+    global $archive_dir;
+    $content = file_get_contents($archive_dir . $corpus . "/" . $uri) or die('Load text failed.');
+    return $content;
+}
+
+function get_text_word_count($corpus, $uri)
+{
+    global $mysqli;
+    $query = $mysqli->prepare("SELECT word_count FROM text WHERE corpus = ? AND uri = ?");
+    $query->bind_param('ss', $corpus, $uri);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($word_count);
+    $query->fetch();
+    return $word_count;
+}
+
+function tokenize_query($q)
+{
+  preg_match_all('/\w+|"(?:\\"|[^"])+"/', $q, $results);
+  return $results[0];
+}
+
+function fulltext_search($corpus, $q, $ymin, $ymax)
+{
+  global $mysqli;
+
+  $query = $mysqli->prepare("SELECT uri, title, author, pub_year
+FROM text
+WHERE corpus = ? AND pub_year >= ? AND pub_year <= ?
+      AND MATCH (text) AGAINST (? IN BOOLEAN MODE)");
+  $query->bind_param('sdds', $corpus, $ymin, $ymax, $q);
+  $query->execute() or die('Query failed: ' . $mysqli->error);
+  $query->bind_result($uri, $title, $author, $pub_year);
+
+  $data = [];
+  while ($query->fetch()) {
+    $data[$uri] = ['title' => $title, 'author' => $author, 'pub_year' => $pub_year];
+  }
+  
+  $results = [];
+  foreach ($data as $uri => $metadata) {
+    $result = ['uri' => $uri];
+    $result['metadata'] = $metadata;
+    $results[] = $result;
+  }
+
+  return $results;
+}
+
+function get_excerpts($corpus, $uri, $q, $excerpt_length, $max_excerpts)
+{
+  global $mysqli;
+
+  $words = tokenize_query($q);
+
+  $query = $mysqli->prepare("SELECT text
+FROM text
+WHERE corpus = ? AND uri = ?");
+  $query->bind_param('ss', $corpus, $uri);
+  $query->execute() or die('Query failed: ' . $mysqli->error);
+  $query->bind_result($text);
+  $query->fetch();
+  
+  $re = '/(.{0,' . ($excerpt_length - 1) . '}?)(^|[^\p{L}&\'’])(';
+  $match_words = [];
+  $first = true;
+  foreach ($words as $word) {
+    if ($first) {
+      $first = false;
+    } else {
+      $re .= '|';
+    }
+    if ($word[0] == '"') {
+      $word = mb_substr($word, 1, -1, 'UTF-8');
+    }
+    $match_words[] = mb_strtolower($word, 'UTF-8');
+    $re .= preg_quote($word);
+  }
+  $re .= ')($|[^\p{L}&\'’])(?=(.{0,' . ($excerpt_length - 1) . '}))/Sius';
+
+  preg_match_all($re, $text, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+
+  $nmatches_by_word = [];
+  $excerpts = [];
+  $last_right_excerpt = "";
+  $last_excerpt_end_offset = -1;
+  $nexcerpts = 0;
+  $i = 0;
+  foreach ($matches as $match) {
+    $left_excerpt = htmlspecialchars($match[1][0] . $match[2][0], ENT_QUOTES) 
+      . '<b>' . htmlspecialchars($match[3][0], ENT_QUOTES) . '</b>'
+      . htmlspecialchars($match[4][0], ENT_QUOTES);
+    $right_excerpt = htmlspecialchars($match[5][0], ENT_QUOTES);
+    
+    if ($match[0][1] <= $last_excerpt_end_offset) {
+      // This excerpt overlaps with the last - merge them.
+      $excerpts[$i - 1] .= $left_excerpt;
+      $last_right_excerpt = $right_excerpt;
+
+    } else {
+      if ($i > 0) {
+	$excerpts[$i - 1] .= $last_right_excerpt;
+      }
+      $excerpts[] = $left_excerpt;
+      $last_right_excerpt = $right_excerpt;
+      $i += 1;
+    }
+
+    $nexcerpts += 1;
+    if ($nexcerpts == $max_excerpts) {
+        break;
+    }
+
+    $last_excerpt_end_offset = $match[0][1] + mb_strlen($match[0][0] . $match[5][0], "UTF-8");
+
+    $word_matched = mb_strtolower($match[3][0], 'UTF-8');
+    foreach ($match_words as $word) {
+      if ($word_matched == $word) {
+	if (array_key_exists($word, $nmatches_by_word)) {
+	  $nmatches_by_word[$word] += 1;
+	} else {
+	  $nmatches_by_word[$word] = 1;
+	}
+      }
+    }
+  }
+  if ($last_right_excerpt != "") {
+    $excerpts[$i - 1] .= $last_right_excerpt;
+  }
+
+  $nmatches = [];
+  foreach ($match_words as $word) {
+    if (array_key_exists($word, $nmatches_by_word)) {
+      $nmatches[] = $nmatches_by_word[$word];
+    } else {
+      $nmatches[] = 0;
+    }
+  }
+
+  return ['excerpts' => $excerpts, 'nmatches' => $nmatches];
+}
+
+function get_nmatches($corpus, $uri, $word)
+{
+  global $mysqli;
+
+  $word = mb_strtolower($word, "UTF-8");
+
+  $query = $mysqli->prepare("SELECT text
+FROM text
+WHERE corpus = ? AND uri = ?");
+  $query->bind_param('ss', $corpus, $uri);
+  $query->execute() or die('Query failed: ' . $mysqli->error);
+  $query->bind_result($text);
+  $query->fetch();
+  
+  $nmatches = preg_match_all('/(^|[^\p{L}&\'’])(' . preg_quote($word)
+                             . ')($|[^\p{L}&\'’])/Siu', $text);
+  
+  return $nmatches;
+}
+
+function log_word_search($q)
+{
+    global $mysqli;
+    $query = $mysqli->prepare("INSERT INTO word_search_log (query)
+VALUES (?)");
+    $query->bind_param('s', $q);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+}
+
+function highlight_search_terms($content, $q)
+{
+    $toks = tokenize_query($q);
+    foreach ($toks as $tok) {
+      if ($tok[0] == '"') {
+	// Quoted string - this case is a bit complex because the individual words
+	// that match parts of the string might have span tags around them.  Also,
+	// I know that REs can't be used to parse general HTML.  The only tags that
+	// can appear in $content are the ones produced by gen_annotated_text, which
+	// can't include recursion.
+	$subtoks = preg_split('/([^\w]+)/', mb_substr($tok, 1, -1, 'UTF-8'), -1,
+			      PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+	$re = '/(^|[^\p{L}&\'’])(';
+	foreach ($subtoks as $subtok) {
+	  if (preg_match('/^\w/', $subtok)) {
+	    $re .= '(?:<[^>]+>)?' . preg_quote($subtok) . '(?:<[^>]+>)?';
+	  } else {
+	    $re .= preg_quote($subtok);
+	  }
+	}
+	$re .= ')($|[^\p{L}&\'’])/Siu';
+        $content = preg_replace($re, '\1<span data-q="q">\2</span>\3', $content);
+      } else {
+        $content = preg_replace('/(^|[^\p{L}&\'’])(' . preg_quote($tok)
+                                    . ')($|[^\p{L}&\'’])/Siu',
+                                '\1<span data-q="q">\2</span>\3', $content);
+      }
+    }
+    return $content;
 }
 
 ?>

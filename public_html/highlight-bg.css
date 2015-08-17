@@ -23,6 +23,14 @@
     .absent-word {
         background-color: pink;
     }
+    .query-word {
+        background-color: pink;
+    }
+    .query-highlight-word {
+        background-color: pink;
+        border:2px solid black;
+        margin: -2px;
+    }
 }
 
 @media print {
@@ -56,6 +64,14 @@
     }
     .absent-word {
         border:2px solid pink;
+        margin: -2px;
+    }
+    .query-word {
+        border:2px solid pink;
+        margin: -2px;
+    }
+    .query-highlight-word {
+        border:2px solid red;
         margin: -2px;
     }
 }

@@ -27,7 +27,9 @@ for filename in os.listdir(indir):
     infile = os.path.join(indir, filename)
     tree = ET.parse(infile)
     date = tree.find('.//tei:edition/tei:date', namespaces=NS)
+    if not date:
+        date = tree.find('.//tei:publicationStmt/tei:date', namespaces=NS)
     text = tree.find('.//tei:text', namespaces=NS)
     print filename, date.text
-    outfile = os.path.join(outdir, date.text + '_' + filename)
-    os.system('saxon {0} {1} >{2}'.format(infile, xslt_file, outfile))
+    outfile = os.path.join(outdir, date.text.replace(u'\u2014', u'--') + '_' + filename)
+    os.system(u'saxon "{0}" "{1}" >"{2}"'.format(infile, xslt_file, outfile))
