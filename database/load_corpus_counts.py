@@ -22,13 +22,41 @@ except IndexError:
     print 'Specify the corpus name.'
     exit()
 
-counts = {}
-totals = {}
+c.execute('''
+CREATE TEMPORARY TABLE count_tmp (    
+    corpus VARCHAR(31) NOT NULL,
+    
+    word VARCHAR(63) NOT NULL,
+    year SMALLINT NOT NULL,
+    ntokens INT UNSIGNED NOT NULL,
+    
+    PRIMARY KEY (year, word)
+) ENGINE=MyISAM;
+''')
 
-for filename in os.listdir('.'):
+c.execute('''
+CREATE TEMPORARY TABLE total_tmp (
+    corpus VARCHAR(31) NOT NULL,
+    
+    year SMALLINT NOT NULL,
+    ntokens BIGINT NOT NULL,
+    npages BIGINT NOT NULL,
+    nbooks BIGINT NOT NULL,
+    
+    PRIMARY KEY (year)
+);
+''')
+
+i = 0
+files = os.listdir('.')
+nfiles = len(files)
+for filename in files:
     if filename == 'FILES_DOWNLOADED':
         continue
-    #print filename
+    print filename
+    if i % 10000 == 0:
+        print i, '/', nfiles
+    i += 1
     if filename[0] == '[':
         year = filename[1:5]
     else:
@@ -49,34 +77,58 @@ for filename in os.listdir('.'):
         ntokens += 1
         tok = tok.replace('\\', '\\\\')
         tok = tok.lower()
-        counts.setdefault(tok, {}).setdefault(year, 0)
-        counts[tok][year] += 1
+        c.execute('''
+SELECT ntokens
+FROM count_tmp
+WHERE word = %s AND year = %s
+''',
+                  (tok, year))
+        if c.rowcount:
+            ntokens_old = c.fetchone()[0]
+            c.execute('''
+UPDATE count_tmp
+SET ntokens = %s
+WHERE word = %s AND year = %s
+''',
+                      (ntokens_old + 1, tok, year))
+        else:
+            c.execute('''
+INSERT INTO count_tmp (corpus, ntokens, word, year)
+VALUES (%s, 1, %s, %s)
+''',
+                      (corpus, tok, year))
 
-    if year in totals:
-        ntokens_old, _, nbooks_old = totals[year]
-        totals[year] = (ntokens_old + ntokens, 0, nbooks_old + 1)
+    c.execute('''
+SELECT ntokens, nbooks
+FROM total_tmp
+WHERE year = %s
+''',
+                  (year,))
+    if c.rowcount:
+        ntokens_old, nbooks_old = c.fetchone()
+        c.execute('''
+UPDATE total_tmp
+        SET ntokens = %s, nbooks = %s
+WHERE year = %s
+''',
+                      (ntokens_old + ntokens, nbooks_old + 1, year))
     else:
-        totals[year] = (ntokens, 0, 1)
+            c.execute('''
+INSERT INTO total_tmp (corpus, ntokens, npages, nbooks, year)
+VALUES (%s, %s, 0, 1, %s)
+''',
+                      (corpus, ntokens, year))
 
-f = codecs.open('/tmp/counts.txt', 'w', 'utf-8')
-for tok in counts:
-    for year in counts[tok]:
-        f.write(u'\t'.join([unicode(x) for x in (corpus, tok, year, counts[tok][year])]) + '\n')
-f.close()
-
-f = codecs.open('/tmp/totals.txt', 'w', 'utf-8')
-for year in totals:
-    f.write(u'\t'.join([unicode(x) for x in (corpus, year) + totals[year]]) + '\n')
-f.close()
+    f.close()
 
 c.execute('''
-LOAD DATA INFILE '/tmp/counts.txt'
-INTO TABLE count
+INSERT INTO count
+SELECT * FROM count_tmp
 ''')
 
 c.execute('''
-LOAD DATA INFILE '/tmp/totals.txt'
-INTO TABLE total
+INSERT INTO total
+SELECT * FROM total_tmp
 ''')
 
 db.commit()
