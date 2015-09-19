@@ -708,7 +708,9 @@ function hide_word_list()
 {
     $("#word-list").css("display", "none");
     window.word_list_visible = false;
-    search_result_highlights.removeClass("query-highlight-word");
+    if (q) {
+	search_result_highlights.removeClass("query-highlight-word");
+    }
 }
 
 function update_word_list_height()

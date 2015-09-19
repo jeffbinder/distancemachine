@@ -102,6 +102,7 @@ echo "totals = " . json_encode($totals) . ";\n";
 echo "word_count = " . json_encode(get_word_count($id)) . ";\n";
 
 ?>
+q = null;
   </script>
  </head>
  <body>
