@@ -222,10 +222,10 @@ q = null;
      <div><span class="vulgar-word">yellow</span> words are marked as vulgar, colloquial, or improper</div>
     </div>
     <div>
-     This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that uses historical data from Google Books to identify words that were uncommon at a given point in time.
+     This interactive text was created by <a href="/" target="_blank">The Distance Machine</a>, a tool that highlights words that are uncommon in texts from a particular point in the past.
     </div>
     <div>
-     Use the controls at the top left to see what words were uncommon in different years, to find words in the text that were omitted from a given dictionary, or to find very uncommon words.  When highlighting words by year or frequency, you can also click the play button to animate.  Double-click or tap on words in the text to see details, including the full historical usage data and dictionary entries.
+     Use the controls at the top left to see what words are uncommon in texts from different years, to find words in the text that were omitted from a given dictionary, or to find very uncommon words.  When highlighting words by year or frequency, you can also click the play button to animate.  Double-click or tap on words in the text to see details, including the full historical usage data and dictionary entries.
     </div>
     <div>
      <a href="/about" target="_blank">About this program</a>
