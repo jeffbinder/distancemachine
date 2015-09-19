@@ -572,10 +572,10 @@ function update_word_list()
 
         var words = get_words_with_class("old-word");
         if (words.length == 0) {
-            html.push("No words found that were more common earlier.");
+            html.push("No words found that are more common in earlier texts.");
         } else {
-            html.push(words.length + " " + (words.length > 1 ? "words that were" : "word that was")
-                      + " more common earlier:<div>");
+            html.push(words.length + " " + (words.length > 1 ? "words that are" : "word that is")
+                      + " more common in earlier texts:<div>");
             html.push(create_word_grid(words, "old-word"));
             html.push("</div>");
         }
@@ -583,10 +583,10 @@ function update_word_list()
 
         words = get_words_with_class("new-word");
         if (words.length == 0) {
-            html.push("<div>No words found that were more common later.</div>");
+            html.push("<div>No words found that are more common in later texts.</div>");
         } else {
-            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that were" : "word that was")
-                      + " more common later:</div><div>");
+            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that are" : "word that is")
+                      + " more common in later texts:</div><div>");
             html.push(create_word_grid(words, "new-word"));
             html.push("</div>");
         }
@@ -594,9 +594,9 @@ function update_word_list()
 
         words = get_words_with_class("lapsed-word");
         if (words.length == 0) {
-            html.push("<div>No words found that were more common both earlier and later.</div>");
+            html.push("<div>No words found that are more common both earlier and later.</div>");
         } else {
-            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that were" : "word that was")
+            html.push("<div>" + words.length + " " + (words.length > 1 ? "words that are" : "word that is")
                       + " more common both earlier and later:</div><div>");
             html.push(create_word_grid(words, "lapsed-word"));
             html.push("</div>");
@@ -646,7 +646,7 @@ function update_word_list()
 
         words = get_words_with_class("obsolete-word");
         if (words.length == 0) {
-            html.push("No words found that were marked as rare or obsolete in the dictionary.");
+            html.push("No words found that are marked as rare or obsolete in the dictionary.");
         } else {
             html.push(words.length + " " + (words.length > 1 ? "words that are" : "word that is")
                       + " marked as rare or obsolete in the dictionary:<div>");
@@ -657,7 +657,7 @@ function update_word_list()
 
         words = get_words_with_class("vulgar-word");
         if (words.length == 0) {
-            html.push("<div>No words found that were marked as vulgar, colloquial, or improper in the dictionary.</div>");
+            html.push("<div>No words found that are marked as vulgar, colloquial, or improper in the dictionary.</div>");
         } else {
             html.push("<div>" + words.length + " " + (words.length > 1 ? "words that are" : "word that is")
                       + " marked as vulgar, colloquial, or improper in the dictionary:</div><div>");

@@ -361,9 +361,9 @@ function update_word_usage_text(word, data)
         html.push("Avg freq <b>" + format_freq(1.0 / avg) + "</b>. ");
         if (periods.length == 1) {
             if (periods[0][0] == data_start_year[word_info_selected_corpus] && !periods[0][1]) {
-                html.push("In consistent use through the whole period covered");
+                html.push("Appears with consist frequency through the whole period covered");
             } else {
-                html.push("Most frequently used from ");
+                html.push("Most frequent from ");
                 html.push("<span class='usage-period-text'>");
                 html.push(periods[0][0]);
                 html.push("-");
@@ -371,7 +371,7 @@ function update_word_usage_text(word, data)
                 html.push("</span>");
             }
         } else if (periods.length == 2) {
-            html.push("Most frequently used from ");
+            html.push("Most frequent from ");
             html.push("<span class='usage-period-text'>");
             html.push(periods[0][0]);
             html.push("-");
@@ -384,7 +384,7 @@ function update_word_usage_text(word, data)
             html.push(periods[1][1]);
             html.push("</span>");
         } else {
-            html.push("Most frequently used from ");
+            html.push("Most frequent from ");
             for (var i in periods) {
                 html.push("<span class='usage-period-text'>");
                 html.push(periods[i][0]);
