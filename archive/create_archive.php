@@ -17,7 +17,7 @@ $indir = $argv[2];
 $metadata_file = $argv[3];
 $outdir = $argv[4];
 
-$mysqli->query("SET GLOBAL max_allowed_packet=1000000000");
+$mysqli->query("SET max_allowed_packet=4G");
 
 $metadata = [];
 foreach (explode("\n", file_get_contents($metadata_file)) as $row) {
@@ -47,7 +47,7 @@ foreach (scandir($indir) as $filename) {
   }
   $text = file_get_contents($filename);
 
-  $data = gen_annotated_text(null, $text, $title, $corpus, true);
+  $data = gen_annotated_text(null, $text, $title, $corpus, true, false, 0);
   $content = $data['content'];
   $word_count = $data['word_count'];
 

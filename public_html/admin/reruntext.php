@@ -18,7 +18,7 @@ $content = $data['content'];
 $text = strip_annotations($content);
 
 reset_task_start_time($id);
-gen_annotated_text($id, $text, $title, $corpus, true);
+gen_annotated_text($id, $text, $title, $corpus, true, false, 0);
 save_text($id);
 
 mysqli_close($mysqli);

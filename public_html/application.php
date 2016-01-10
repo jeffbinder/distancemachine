@@ -321,6 +321,60 @@ GROUP BY floor(year / 10) * 10");
     return $counts;
 }
 
+function get_total_count_for_word($word, $corpus)
+{
+    global $mysqli;
+    global $data_start_year;
+    
+    $word = mb_strtolower($word, "UTF-8");
+    $query = $mysqli->prepare("SELECT SQL_CACHE ntokens FROM total_count
+WHERE word = ? AND corpus = ?");
+    $query->bind_param('ss', $word, $corpus);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($count);
+
+    if (!$query->fetch()) {
+        $count = 0;
+    }
+    
+    $query->free_result();
+    
+    return (int)$count;
+}
+
+$common_word_lists = [];
+function load_common_word_list($corpus, $above_freq)
+{
+    global $common_word_lists;
+    global $mysqli;
+    global $data_start_year;
+    
+    $query = $mysqli->prepare("SELECT word FROM total_count
+WHERE corpus = ? AND ntokens > ?");
+    $query->bind_param('si', $corpus, $above_freq);
+    $query->execute() or die('Query failed: ' . $mysqli->error);
+    $query->bind_result($word);
+
+    $words = [];
+    while ($query->fetch()) {
+        $words[$word] = 1;
+    }
+    
+    $query->free_result();
+    
+    $common_word_lists[$corpus . $above_freq] = $words;
+}
+
+function is_word_common($word, $corpus, $above_freq)
+{
+    global $common_word_lists;
+    if (array_key_exists($corpus . $above_freq, $common_word_lists)) {
+        return array_key_exists($word, $common_word_lists[$corpus . $above_freq]);
+    } else {
+        return get_total_count_for_word($word, $corpus) > $above_freq;
+    }
+}
+
 function parse_year($str)
 {
     if ($str == "") {
@@ -567,7 +621,8 @@ WHERE word = ? AND corpus = ?");
 // Generates the main content of an annotated text, saving it to
 // the tmpdir and updating the database accordingly.  If $id is null,
 // returns the text rather than saving it.
-function gen_annotated_text($id, $text, $title, $corpus, $offline)
+function gen_annotated_text($id, $text, $title, $corpus, $offline, $count_word_types,
+                            $count_words_above_freq)
 {
   global $max_linelen;
   global $max_freq;
@@ -601,6 +656,11 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
   $pos = 0;
   $tok = "";
   $nwords = 0;
+  $nwords_above_freq = 0;
+  if ($count_word_types) {
+    $word_types = [];
+    $word_types_above_freq = [];
+  }
   $nlines = 0;
   $nannotations = 0;
   $progress = 0;
@@ -688,6 +748,18 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
         $tokpos += strlen($word);
         $mb_tokpos += mb_strlen($word, 'UTF-8');
         $nwords += 1;
+	$word_lower = strtolower($word_quotes_normalized);
+	if ($count_word_types) {
+	  $word_types[$word_lower] = 1;
+	}
+        if ($count_words_above_freq) {
+	  if (is_word_common($word_lower, $corpus, $count_words_above_freq)) {
+            $nwords_above_freq += 1;
+	    if ($count_word_types) {
+	      $word_types_above_freq[$word_lower] = 1;
+	    }
+	  }
+        }
       } else {
         $punct = mb_substr($tok, $mb_tokpos, 1, 'UTF-8');
         if ($punct == "_") {
@@ -749,7 +821,17 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline)
   $running = false;
 
   if (!$id) {
-    return ['content' => $content, 'word_count' => $nwords];
+      $ret = ['content' => $content, 'word_count' => $nwords];
+      if ($count_word_types) {
+          $ret['word_types'] = count($word_types);
+      }
+      if ($count_words_above_freq) {
+          $ret['words_above_freq'] = $nwords_above_freq;
+	  if ($count_word_types) {
+	    $ret['word_types_above_freq'] = count($word_types_above_freq);
+	  }
+      }
+      return $ret;
   }
 }
 
@@ -764,6 +846,187 @@ function strip_annotations($content)
   $text = htmlspecialchars_decode($text, ENT_QUOTES);
   
   return $text;
+}
+
+// Computes statistics about a text that has been annotated by gen_annotated_text.
+function compute_text_stats($content, $word_count, $word_types, $corpus, $above_freq)
+{
+  global $start_year;
+  global $end_year;
+  global $dicts;
+  
+  $nyears = $end_year[$corpus] - $start_year[$corpus] + 1;
+
+  $stats = [
+	    "ctyp" => array_pad([], $nyears, 0),
+	    "otyp" => array_pad([], $nyears, 0),
+	    "ntyp" => array_pad([], $nyears, 0),
+	    "ltyp" => array_pad([], $nyears, 0),
+	    "ctok" => array_pad([], $nyears, 0),
+	    "otok" => array_pad([], $nyears, 0),
+	    "ntok" => array_pad([], $nyears, 0),
+	    "ltok" => array_pad([], $nyears, 0)
+	    ];
+
+  $dict_stats = [
+		 "x" => [],
+		 "o" => [],
+		 "v" => []
+		 ];
+  foreach ($dicts as $dict) {
+    $dict_stats["x"][$dict] = 0;
+    $dict_stats["o"][$dict] = 0;
+    $dict_stats["v"][$dict] = 0;
+  }
+    
+  $freq_stats = ["l" => [1000000 => 0, 10000000 => 0, 100000000 => 0,
+			 1000000000 => 0, 10000000000 => 0], "a" => 0];
+
+  $words = [
+	    "c" => array_pad([], $nyears, []),
+	    "o" => array_pad([], $nyears, []),
+	    "n" => array_pad([], $nyears, []),
+	    "l" => array_pad([], $nyears, [])
+	    ];
+  $re = '/data-usage=\'([^\']+)\'[^>]*>([^<]*)</u';
+  preg_match_all($re, $content, $matches, PREG_SET_ORDER);
+  foreach ($matches as $match) {
+    $usage = $match[1];
+    $word = strtolower($match[2]);
+    $word = str_replace("’", "'", $word);
+    if (!is_word_common($word, $corpus, $above_freq)) {
+      continue;
+    }
+    $len = strlen($usage);
+    for ($k = 0; $k < $len; $k += 5) {
+      $usage_state = substr($usage, $k, 1);
+      $ch = substr($usage, $k+3, 1);
+      if ($ch == "x") {
+	$cent = intval(substr($usage, $k+1, 2)) * 100;
+	$idx = $cent - $start_year[$corpus];
+	for ($a = 0; $a < 100; $a++) {
+	  $words[$usage_state][$idx + $a][] = $word;
+	}
+      } else if ($ch == "l") {
+	$cent = intval(substr($usage, $k+1, 2)) * 100;
+	$idx = $cent - $start_year[$corpus];
+	for ($a = 0; $a < 50; $a++) {
+	  $words[$usage_state][$idx + $a][] = $word;
+	}
+      } else if ($ch == "r") {
+	$cent = intval(substr($usage, $k+1, 2)) * 100;
+	$idx = $cent - $start_year[$corpus];
+	for ($a = 50; $a < 100; $a++) {
+	  $words[$usage_state][$idx + $a][] = $word;
+	}
+      } else {
+	$ch = substr($usage, $k+4, 1);
+	if ($ch == "x") {
+	  $dec = intval(substr($usage, $k+1, 3)) * 10;
+	  $idx = $dec - $start_year[$corpus];
+	  for ($a = 0; $a < 10; $a++) {
+	    $words[$usage_state][$idx + $a][] = $word;
+	  }
+	} else if ($ch == "l") {
+	  $dec = intval(substr($usage, $k+1, 3)) * 10;
+	  $idx = $dec - $start_year[$corpus];
+	  for ($a = 0; $a < 5; $a++) {
+	    $words[$usage_state][$idx + $a][] = $word;
+	  }
+	} else if ($ch == "r") {
+	  $dec = intval(substr($usage, $k+1, 3)) * 10;
+	  $idx = $dec - $start_year[$corpus];
+	  for ($a = 5; $a < 10; $a++) {
+	    $words[$usage_state][$idx + $a][] = $word;
+	  }
+	} else {
+	  $y = intval(substr($usage, $k+1, 4));
+	  $idx = $y - $start_year[$corpus];
+	  $words[$usage_state][$idx][] = $word;
+	}
+      }
+    }
+  }
+  for ($i = 0; $i < $nyears; $i++) {
+    $stats["otyp"][$i] = count(array_unique($words["o"][$i]));
+    $stats["ntyp"][$i] = count(array_unique($words["n"][$i]));
+    $stats["ltyp"][$i] = count(array_unique($words["l"][$i]));
+    $stats["otok"][$i] = count($words["o"][$i]);
+    $stats["ntok"][$i] = count($words["n"][$i]);
+    $stats["ltok"][$i] = count($words["l"][$i]);
+  }
+  
+  $re = '/data-dicts=\'([^\']+)\'[^>]*>([^<]*)</u';
+  preg_match_all($re, $content, $matches, PREG_SET_ORDER);
+  foreach ($matches as $match) {
+    $dict_list = $match[1];
+    $word = strtolower($match[2]);
+    $word = str_replace("’", "'", $word);
+    if (!is_word_common($word, $corpus, $above_freq)) {
+      continue;
+    }
+    foreach ($dicts as $dict) {
+      if (strpos($dict_list, "x" . $dict) != FALSE) {
+	$dict_stats["x"][$dict] += 1;
+      }
+      if (strpos($dict_list, "o" . $dict) != FALSE) {
+	$dict_stats["o"][$dict] += 1;
+      }
+      if (strpos($dict_list, "v" . $dict) != FALSE) {
+	$dict_stats["v"][$dict] += 1;
+      }
+    }
+  }
+  
+  $re = '/data-freq=\'([^\']+)\'[^>]*>([^<]*)</u';
+  preg_match_all($re, $content, $matches, PREG_SET_ORDER);
+  foreach ($matches as $match) {
+    $freq = intval($match[1]);
+    $word = strtolower($match[2]);
+    $word = str_replace("’", "'", $word);
+    if (!is_word_common($word, $corpus, $above_freq)) {
+      continue;
+    }
+    if ($freq == 0) {
+      $freq_stats["a"] += 1;
+    } else {
+      for ($k = 10000000000; $k >= 1000000; $k *= 0.1) {
+	if ($freq <= $k) {
+	  break;
+	}
+	$freq_stats["l"][$k] += 1;
+      }
+    }
+    }
+
+  $tok_scale = 100.0 / $word_count;
+  $typ_scale = 100.0 / $word_types;
+  for ($i = 0; $i < $nyears; $i++) {
+    $stats["ctok"][$i] = ($word_count - $stats["otok"][$i]
+			  - $stats["ntok"][$i] - $stats["ltok"][$i]);
+    $stats["ctok"][$i] *= $tok_scale;
+    $stats["otok"][$i] *= $tok_scale;
+    $stats["ntok"][$i] *= $tok_scale;
+    $stats["ltok"][$i] *= $tok_scale;
+    $stats["ctyp"][$i] = ($word_types - $stats["otyp"][$i]
+			  - $stats["ntyp"][$i] - $stats["ltyp"][$i]);
+    $stats["ctyp"][$i] *= $typ_scale;
+    $stats["otyp"][$i] *= $typ_scale;
+    $stats["ntyp"][$i] *= $typ_scale;
+    $stats["ltyp"][$i] *= $typ_scale;
+  }
+  foreach ($dicts as $dict) {
+    $dict_stats["x"][$dict] *= $tok_scale;
+    $dict_stats["o"][$dict] *= $tok_scale;
+    $dict_stats["v"][$dict] *= $tok_scale;
+  }
+  for ($i = 10000000000; $i >= 1000000; $i *= 0.1) {
+    $freq_stats["l"][$i] *= $tok_scale;
+  }
+  $freq_stats["a"] *= $tok_scale;
+
+  return ['usage_stats' => $stats, 'dict_stats' => $dict_stats,
+	  'freq_stats' => $freq_stats];
 }
 
 function acquire_storage_lock()
