@@ -1336,7 +1336,7 @@ INNER JOIN sense AS sense2 ON (synset.synsetid = sense2.synsetid)
 INNER JOIN word AS word2 ON (sense2.wordid = word2.wordid)
 LEFT JOIN casedword AS casedword2 ON (sense2.casedwordid = casedword2.wordid)
 WHERE word.lemma = ? %s
-GROUP BY synset.pos, sense.rank, synset.definition
+GROUP BY coalesce(casedword.lemma, word.lemma), synset.pos, sense.rank, synset.definition
 ", $pos_predicate);
         $query = $mysqli->prepare($qstring);
         if ($pos && $pos != "nv") {
