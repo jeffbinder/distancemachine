@@ -90,6 +90,32 @@ hr {
     border: 1px solid #c5b390;
 }
 
+.boxholder {
+    width: 627px;
+    height: 135px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+}
+
+.leftbox {
+    float: left;
+    width: 333px;
+    height: 113px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+}
+
+.rightbox {
+    float: right;
+    width: 214px;
+    height: 113px;
+    padding: 10px;
+    background-color: #f1ede5;
+    border: 1px solid #c5b390;
+}
+
 #text-area {
     margin-top: 40px;
     font-size: 10pt;

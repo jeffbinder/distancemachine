@@ -34,20 +34,31 @@ archive = false;
     The Distance Machine
    </div>
   </div>
-  <div class="box" id="text-area">
-   <div class="text" style="margin-bottom:10px">
-    The Distance Machine uses historical word usage data from Google Books to highlight words in a text that were unusual at a selected point in time.  New to this site?  <a href="about">Start here</a>.
+  <div class="boxholder" id="text-area">
+   <div class="leftbox">
+    <div class="text" style="margin-bottom:10px">
+     The Distance Machine uses historical word usage data from Google Books to highlight words in a text that were unusual at a selected point in time.  Want to learn more?  <a href="about">Click here</a>.
+    </div>
+    <hr/>
+    <div>
+     <a href="howitworks">How it works</a>
+     | <a href="examples">Examples</a>
+     | <a href="activity">Recent searches</a>
+    </div>
    </div>
-   <hr/>
-   <div>
-    <a href="howitworks">How it works</a>
-    | <a href="examples">Examples</a>
-    | <a href="activity">Recent searches</a>
+   <div class="rightbox">
+    <div style="font-size:16pt">
+     Try it now!
+    </div>
+    <hr/>
+    <div class="text" style="margin-bottom:10px">
+     Experiment with our edition of Walt Whitman's <a href="http://dmachine/text/pRbZXEmi"><i>Leaves of Grass</i></a>.
+    </div>
    </div>
   </div>
-  <div class="box" id="input-area">
+  <div class="box" id="input-area" style="clear:both">
    <div style="font-size:16pt;margin-bottom:10px">
-    Try it!
+    Enter your own text:
    </div>
    <div>
     <input id="title-input" type="text" name="title" style="width:600px">
