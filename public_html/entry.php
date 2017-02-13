@@ -52,7 +52,7 @@ archive = false;
     </div>
     <hr/>
     <div class="text" style="margin-bottom:10px">
-     Experiment with our edition of Walt Whitman's <a href="http://dmachine/text/pRbZXEmi"><i>Leaves of Grass</i></a>.
+     Experiment with our edition of Walt Whitman's <a href="text/pRbZXEmi"><i>Leaves of Grass</i></a>.
     </div>
    </div>
   </div>
