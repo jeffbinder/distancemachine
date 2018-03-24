@@ -636,6 +636,10 @@ function gen_annotated_text($id, $text, $title, $corpus, $offline, $count_word_t
     set_task_data($id, $title, $corpus);
     set_task_running($id);
   }
+
+  if ($title != "Untitled") {
+    $text = $title . "\n\n" . $text;
+  }
   
   $textlen = strlen($text);
   if ($id) {
